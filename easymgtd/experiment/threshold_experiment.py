@@ -24,7 +24,7 @@ class ThresholdExperiment(BaseExperiment):
     - For rank_GLTR, only logistic regression is used.
     """
 
-    _ALLOWED_detector = ["ll", "rank", "LRR", "rank_GLTR", "entropy", "Binoculars"]
+    _ALLOWED_detector = ["ll", "rank", "LRR", "rank_GLTR", "entropy", "Binoculars", "tdt"]
 
     def __init__(self, detector, **kargs) -> None:
         super().__init__()
@@ -89,13 +89,13 @@ class ThresholdExperiment(BaseExperiment):
             print("Run classification for results")
 
             # Detectors that support threshold-based classification
-            if detector.name in ["Binoculars", "rank", "ll", "LRR", "entropy"]:
+            if detector.name in ["Binoculars", "rank", "ll", "LRR", "entropy", "tdt"]:
                 print("Using threshold criterion")
                 detector.find_threshold(x_train, y_train)
                 # Direction distinction:
-                # rank/LRR/entropy/Binoculars: lower score = more machine-like
+                # rank/LRR/entropy/Binoculars/tdt: lower score = more machine-like
                 # ll: higher score = more machine-like
-                if detector.name in ["rank", "LRR", "entropy", "Binoculars"]:
+                if detector.name in ["rank", "LRR", "entropy", "Binoculars", "tdt"]:
                     y_train_preds = [x < detector.threshold for x in x_train]
                     y_test_preds = [x < detector.threshold for x in x_test]
                     train_result1 = (

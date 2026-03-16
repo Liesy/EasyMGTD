@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from .loading import load_pretrained
 from dataclasses import dataclass
+import numpy as np
 from sklearn.metrics import (
     accuracy_score,
     precision_score,
@@ -9,11 +9,8 @@ from sklearn.metrics import (
     roc_auc_score,
     confusion_matrix,
 )
-import warnings
-import numpy as np
 
 DETECTOR_MAPPING = {
-    "gptzero": "easymgtd.methods.GPTZeroAPI",
     "ll": "easymgtd.methods.LLDetector",
     "rank": "easymgtd.methods.RankDetector",
     "rank_GLTR": "easymgtd.methods.RankGLTRDetector",
@@ -24,6 +21,7 @@ DETECTOR_MAPPING = {
     "DNA-GPT": "easymgtd.methods.DNAGPTDetector",
     "NPR": "easymgtd.methods.NPRDetector",
     "LRR": "easymgtd.methods.LRRDetector",
+    "gptzero": "easymgtd.methods.GPTZeroAPI",
     "GPTZero": "easymgtd.methods.GPTZeroDetector",
     "RADAR": "easymgtd.methods.RadarDetector",
     "OpenAI-D": "easymgtd.methods.SupervisedDetector",
@@ -31,12 +29,12 @@ DETECTOR_MAPPING = {
     "ChatGPT-D": "easymgtd.methods.SupervisedDetector",
     "LM-D": "easymgtd.methods.SupervisedDetector",
     "demasq": "easymgtd.methods.DemasqDetector",
+    "tdt": "easymgtd.methods.TDTDetector",
     "incremental": "easymgtd.methods.IncrementalDetector",
     "baseline": "easymgtd.methods.BaselineDetector",
     "generate": "easymgtd.methods.GenerateDetector",
     "rn": "easymgtd.methods.RNDetector",
 }
-
 EXPERIMENT_MAPPING = {
     "threshold": "easymgtd.experiment.ThresholdExperiment",
     "perturb": "easymgtd.experiment.PerturbExperiment",
@@ -146,20 +144,6 @@ class BaseExperiment(ABC):
                     test_metric = self.cal_metrics(*detector_predict[key])
                     final_output.append(DetectOutput(name=key, test=test_metric))
 
-            # if is_eval:
-            #     test_metric = self.cal_metrics(*detector_predict['test_pred'])
-            #     final_output.append(DetectOutput(
-            #         name = '',
-            #         test = test_metric
-            #     ))
-            # else:
-            #     train_metric = self.cal_metrics(*detector_predict['train_pred'])
-            #     test_metric = self.cal_metrics(*detector_predict['test_pred'])
-            #     final_output.append(DetectOutput(
-            #         name = '',
-            #         train = train_metric,
-            #         test = test_metric
-            #     ))
         return final_output
 
 

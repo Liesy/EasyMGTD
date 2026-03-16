@@ -18,6 +18,7 @@ from .perturb import (
 )
 from .supervised import SupervisedDetector
 from .demasq import DemasqDetector
+from .tdt import TDTDetector
 from .supervised_incremental import IncrementalDetector
 from .supervised_fewshot import (
     FewShotDetector,
