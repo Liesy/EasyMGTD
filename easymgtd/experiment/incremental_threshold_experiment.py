@@ -214,8 +214,13 @@ class IncrementalThresholdExperiment(BaseExperiment):
                     self.increment_classes(detector, num_newclass)
                     print(detector.classifier.coef_.shape)
 
-                if detector.name in ["rank_GLTR"]:
-                    # rank_GLTR returns multi-dimensional output
+                # Check if current detector outputs multi-dimensional features
+                is_multi_dim = detector.name == "rank_GLTR" or (
+                    detector.name == "tdt" and getattr(detector, "extract_wavelet_features", False)
+                )
+
+                if is_multi_dim:
+                    # Multi-dimensional output
                     print("Predict training data")
                     x_train, y_train = (
                         detector.detect(train_dataset["text"]),

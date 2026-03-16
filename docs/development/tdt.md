@@ -50,8 +50,8 @@ class TDTDetector(BaseDetector):
 
 - _原版的 TDT:_ 除了算分之外需要维护一个 `compute_perplexity` 和 `get_dynamic_threshold` 方法。一旦判定样本超出 `base_threshold` 经过困惑度加权的 `dynamic_threshold` 即视作 AI 文本。
 - _EasyMGTD 的思路:_ 作为标准 Pipeline，任何纯算特征无全连接侧分类头的算法（例如 Rank, GLTR, Entropy），都不该在类里直接执行“阈值定案”。因此，`TDTDetector` 专注于返回打分：
-  1.  `TDTDetector.detect(textList)`: 将 `compute_crit` 产生的不变序列特征返回为 float 数组。
-  2.  `TDTDetector.find_threshold()`: 配合 `ThresholdExperiment`，在一维的训练集标量打分空间上搜索最佳 F1 划分阈值（如果检测配置采用了这种切分方式）。我们摒弃了它的动态熵缩放（因为这是原实验中的把控标准不适用于 MGTBench 的二分流）。
+  1. `TDTDetector.detect(textList)`: 将 `compute_crit` 产生的不变序列特征返回为 float 数组。
+  2. `TDTDetector.find_threshold()`: 配合 `ThresholdExperiment`，在一维的训练集标量打分空间上搜索最佳 F1 划分阈值（如果检测配置采用了这种切分方式）。我们摒弃了它的动态熵缩放（因为这是原实验中的把控标准不适用于 MGTBench 的二分流）。
 
 ### 3. 加入 Experiment 实验路由支持
 
@@ -98,6 +98,7 @@ pip install PyWavelets==1.9.0
 ### 2. 重构后的核心路径
 
 在最新的组件化架构中，TDT 相关逻辑位于：
+
 - **检测器实现**: [easymgtd/methods/tdt.py](file:///data/liyang/MGTD-Baselines/EasyMGTD/easymgtd/methods/tdt.py)
 - **实验调度**: [easymgtd/experiment/threshold_experiment.py](file:///data/liyang/MGTD-Baselines/EasyMGTD/easymgtd/experiment/threshold_experiment.py) (已加入 `_ALLOWED_detector` 白名单)
 - **工厂映射**: 在 [easymgtd/auto.py](file:///data/liyang/MGTD-Baselines/EasyMGTD/easymgtd/auto.py) 中注册为 `"tdt"`。
@@ -133,6 +134,30 @@ python run/debug/test_tdt.py
 ```
 
 **预期行为**:
+
 1. 载入双模型至 GPU（建议使用双卡，脚本会自动尝试 `cuda:0` 和 `cuda:1`）。
 2. 加载本地 AITextDetect 数据。
-3. 执行打分逻辑并输出 ACC/F1/AUC 等指标。
+
+### 5. 关键 Bug 修复记录 (2026-03-16)
+
+在集成开发过程中发现并解决了以下两个关键技术阻碍：
+
+#### 5.1 多 GPU 设备不一致错误 (RuntimeError)
+
+- **现象**: 当 `reference_model` 被加载到 `cuda:0` 而 `scoring_model` 被加载到 `cuda:1` 时，直接进行张量运算会抛出 `RuntimeError: Expected all tensors to be on the same device`。
+- **修复方案**: 在 `get_t_discrepancy_analytic` 计算逻辑开始处，显式将 `logits_ref` 和 `labels` 同步移动到 `logits_score` 所在的设备硬件上。
+
+#### 5.2 BFloat16 类型转换错误 (TypeError)
+
+- **现象**: 由于 `numpy` 不支持原生处理 `BFloat16` 格式的数据，在执行 `.cpu().numpy()` 转换时会抛出 `TypeError: Got unsupported ScalarType BFloat16`。
+- **修复方案**: 在进行 `numpy` 转换之前，先调用 `.float()` 将张量显式提升为 `Float32` 精度，以确保与 `numpy` 和底层波形分析库的兼容性。
+
+#### 5.3 CUDA Tensor 导出至 Numpy 错误 (TypeError)
+
+- **现象**: 当 `TDT` 返回的分数如果是位于 GPU 上的张量标量时，在实验流水线的后续步骤（如 `np.array()` 转换）中会报错：`can't convert cuda:1 device type tensor to numpy`。
+- **修复方案**: 确保 `get_t_discrepancy_analytic` 函数的所有返回路径都经过处理：使用 `.item()` 将单数值张量转为 Python 原生浮点数，从而彻底脱离 GPU 设备依赖。
+
+#### 5.4 多维特征导致的数据格式错误 (IndexError)
+
+- **现象**: 当开启波形特征提取 (`extract_wavelet_features=True`) 时，TDT 返回三维特征向量。实验流水线默认将其视为一维标量处理，在执行数据准备或阈值搜索时会触发 `IndexError: too many indices for array`。
+- **修复方案**: 在 `ThresholdExperiment` 和 `IncrementalThresholdExperiment` 中引入 `is_multi_dim` 逻辑开关。当检测到 TDT 处于波形提取模式时，自动跳过标量独有的数据展平及阈值遍历环节，强制采用多维逻辑回归 (Logistic Regression) 分类流程。

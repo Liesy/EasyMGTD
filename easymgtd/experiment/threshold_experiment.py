@@ -73,8 +73,14 @@ class ThresholdExperiment(BaseExperiment):
             if detector.name not in self._ALLOWED_detector:
                 print(detector.name, "is not for this experiment")
                 continue
-            if detector.name in ["rank_GLTR"]:
-                # rank_GLTR returns multi-dimensional output, no data_prepare needed
+                
+            # Check if current detector outputs multi-dimensional features
+            is_multi_dim = detector.name == "rank_GLTR" or (
+                detector.name == "tdt" and getattr(detector, "extract_wavelet_features", False)
+            )
+
+            if is_multi_dim:
+                # Multi-dimensional output, no scalar data_prepare needed
                 print("Predict training data")
                 x_train, y_train = detector.detect(self.train_text), self.train_label
                 x_train = np.array(x_train)
@@ -96,8 +102,8 @@ class ThresholdExperiment(BaseExperiment):
 
             print("Run classification for results")
 
-            # Detectors that support threshold-based classification
-            if detector.name in ["Binoculars", "rank", "ll", "LRR", "entropy", "tdt"]:
+            # Detectors that support threshold-based classification (scalars only)
+            if not is_multi_dim and detector.name in ["Binoculars", "rank", "ll", "LRR", "entropy", "tdt"]:
                 print("Using threshold criterion")
                 detector.find_threshold(x_train, y_train)
                 # Direction distinction:

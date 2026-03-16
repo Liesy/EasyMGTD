@@ -18,7 +18,7 @@ from easymgtd import AutoDetector, AutoExperiment
 # Configuration
 # ============================================================
 METHOD_NAME = "Binoculars"
-GPU_ID = "0"
+GPU_ID = "0,1"
 DEBUG_TOPIC = "STEM"
 DEBUG_LLM = "Moonshot"
 

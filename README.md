@@ -1,6 +1,10 @@
 # EasyMGTD
 
-EasyMGTD 是基于 [MGTBench-2.0](https://github.com/Y-L-LIU/MGTBench-2.0) 的机器生成文本检测评测框架。它旨在提供一个易于扩展、“组装流水线”式的架构，方便研究人员快速接入和测试如 SeqXGPT、TDT、Human-Outlier 等前沿的检测方法，或者利用这些基础设施进行大规模实证实验。
+EasyMGTD 是基于 [MGTBench-2.0](https://github.com/Y-L-LIU/MGTBench-2.0) 的机器生成文本检测评测框架。它旨在提供一个易于扩展、“组装流水线”式的架构，方便研究人员快速接入和测试前沿的检测方法，或者利用这些基础设施进行大规模实证实验。
+
+## News
+
+- **[2026.03.16]** 🚀 现已全量支持 **TDT (Temporal Discrepancy Tomography)** 算法的单维标量和多维小波特征提取接入，支持在双模型配置及多 GPU 流水线下直接调用。查阅 [TDT 接入开发文档](docs/development/tdt.md) 获取详情。
 
 ## Supported Methods
 
@@ -18,7 +22,7 @@ Currently, we support the following methods (continuous updating):
   - DNA-GPT [[Ref]](https://arxiv.org/abs/2305.17359);
   - Fast-DetectGPT [[Ref]](https://arxiv.org/abs/2310.05130);
   - Binoculars [[Ref]](https://arxiv.org/abs/2401.12070);
-  - TDT (On the way)
+  - TDT [[Ref]](http://arxiv.org/abs/2508.01754);
 - Model-based methods:
   - OpenAI Detector [[Ref]](https://arxiv.org/abs/1908.09203);
   - ChatGPT Detector [[Ref]](https://arxiv.org/abs/2301.07597);

@@ -62,6 +62,11 @@ def get_t_discrepancy_analytic(
         logits_score = logits_score[:, :, :vocab_size]
 
     labels = labels.unsqueeze(-1) if labels.ndim == logits_score.ndim - 1 else labels
+
+    # Ensure all tensors are on the same device to avoid RuntimeError in multi-GPU setup
+    device = logits_score.device
+    logits_ref = logits_ref.to(device)
+    labels = labels.to(device)
     lprobs_score = torch.log_softmax(logits_score, dim=-1)
     probs_ref = torch.softmax(logits_ref, dim=-1)
     log_likelihood = lprobs_score.gather(dim=-1, index=labels).squeeze(-1)
@@ -79,10 +84,11 @@ def get_t_discrepancy_analytic(
     t_discrepancy_scalar = (
         log_likelihood.sum(dim=-1) - mean_ref.sum(dim=-1)
     ) / scale.sum(dim=-1)
-    t_discrepancy_scalar = t_discrepancy_scalar.mean().item()
+    token_discrepancy_scalar = t_discrepancy_scalar.mean().item()
 
+    # Cast to float32 before converting to numpy as numpy doesn't support bfloat16
     token_discrepancies = (
-        (token_discrepancies_raw / torch.sqrt(token_var)).detach().cpu().numpy()
+        (token_discrepancies_raw / torch.sqrt(token_var)).detach().float().cpu().numpy()
     )
     token_discrepancies = np.nan_to_num(
         token_discrepancies, nan=0.0, posinf=10.0, neginf=-10.0
@@ -93,9 +99,13 @@ def get_t_discrepancy_analytic(
 
     if extract_wavelet_features:
         wavelet_features = get_wavelet_features(continuous_signal)
-        scale_factor = abs(t_discrepancy_scalar) / (
-            np.mean(np.abs(wavelet_features)) + 1e-6
+        # Ensure scalar from GPU is moved to host
+        t_scalar_val = (
+            t_discrepancy_scalar.item()
+            if torch.is_tensor(t_discrepancy_scalar)
+            else t_discrepancy_scalar
         )
+        scale_factor = abs(t_scalar_val) / (np.mean(np.abs(wavelet_features)) + 1e-6)
         wavelet_features = [f * scale_factor for f in wavelet_features]
         if return_details:
             details = {
@@ -103,24 +113,32 @@ def get_t_discrepancy_analytic(
                 "continuous_signal": continuous_signal,
                 "wavelet_coeffs": wavelet_coeffs,
                 "wavelet_features": wavelet_features,
-                "t_discrepancy_scalar": t_discrepancy_scalar,
+                "t_discrepancy_scalar": t_scalar_val,
             }
             return wavelet_features, details
         return wavelet_features
+
+    # Ensure final return value is a python scalar to avoid CUDA->Numpy error in pipeline
+    final_scalar = (
+        t_discrepancy_scalar.item()
+        if torch.is_tensor(t_discrepancy_scalar)
+        else t_discrepancy_scalar
+    )
+
     if return_details:
         details = {
             "token_discrepancies": token_discrepancies,
             "continuous_signal": continuous_signal,
             "wavelet_coeffs": wavelet_coeffs,
             "wavelet_features": [
-                t_discrepancy_scalar,
-                t_discrepancy_scalar,
-                t_discrepancy_scalar,
+                final_scalar,
+                final_scalar,
+                final_scalar,
             ],
-            "t_discrepancy_scalar": t_discrepancy_scalar,
+            "t_discrepancy_scalar": final_scalar,
         }
-        return t_discrepancy_scalar, details
-    return t_discrepancy_scalar
+        return final_scalar, details
+    return final_scalar
 
 
 class TDTDetector(BaseDetector):
