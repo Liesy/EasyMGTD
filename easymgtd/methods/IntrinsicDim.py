@@ -25,24 +25,20 @@ def prim_tree(adj_matrix, alpha=1.0):
         dst[visited] = infty
 
         v = np.argmin(dst)
-        s += (adj_matrix[v][ancestor[v]] ** alpha)
+        s += adj_matrix[v][ancestor[v]] ** alpha
 
     return s.item()
 
 
 def process_string(sss):
-    return sss.replace('\n', ' ').replace('  ', ' ')
+    return sss.replace("\n", " ").replace("  ", " ")
 
 
-class PHD():
+class PHD:
     def __init__(
-            self,
-            alpha=1.0,
-            metric='euclidean',
-            n_reruns=3,
-            n_points=7,
-            n_points_min=3):
-        '''
+        self, alpha=1.0, metric="euclidean", n_reruns=3, n_points=7, n_points_min=3
+    ):
+        """
         Initializes the instance of PH-dim computer
         Parameters:
             1) alpha --- real-valued parameter Alpha for computing PH-dim (see the reference paper). Alpha should be chosen lower than
@@ -51,7 +47,7 @@ class PHD():
             3) n_reruns --- Number of restarts of whole calculations (each restart is made in a separate thread)
             4) n_points --- Number of subsamples to be drawn at each subsample
             5) n_points_min --- Number of subsamples to be drawn at larger subsamples (more than half of the point cloud)
-        '''
+        """
         self.alpha = alpha
         self.n_reruns = n_reruns
         self.n_points = n_points
@@ -75,8 +71,7 @@ class PHD():
             reruns = np.ones(restarts)
             for i in range(restarts):
                 tmp = self._sample_W(W, n)
-                reruns[i] = prim_tree(
-                    cdist(tmp, tmp, metric=self.metric), self.alpha)
+                reruns[i] = prim_tree(cdist(tmp, tmp, metric=self.metric), self.alpha)
 
             lengths.append(np.median(reruns))
         lengths = np.array(lengths)
@@ -84,17 +79,12 @@ class PHD():
         x = np.log(np.array(list(test_n)))
         y = np.log(lengths)
         N = len(x)
-        outp[thread_id] = (N * (x * y).sum() - x.sum() *
-                           y.sum()) / (N * (x ** 2).sum() - x.sum() ** 2)
+        outp[thread_id] = (N * (x * y).sum() - x.sum() * y.sum()) / (
+            N * (x**2).sum() - x.sum() ** 2
+        )
 
-    def fit_transform(
-            self,
-            X,
-            y=None,
-            min_points=50,
-            max_points=512,
-            point_jump=40):
-        '''
+    def fit_transform(self, X, y=None, min_points=50, max_points=512, point_jump=40):
+        """
         Computing the PH-dim
         Parameters:
             1) X --- point cloud of shape (n_points, n_features),
@@ -102,20 +92,15 @@ class PHD():
             3) min_points --- size of minimal subsample to be drawn
             4) max_points --- size of maximal subsample to be drawn
             5) point_jump --- step between subsamples
-        '''
+        """
         ms = np.zeros(self.n_reruns)
         test_n = range(min_points, max_points, point_jump)
         threads = []
 
         for i in range(self.n_reruns):
             threads.append(
-                Thread(
-                    target=self._calc_ph_dim_single,
-                    args=[
-                        X,
-                        test_n,
-                        ms,
-                        i]))
+                Thread(target=self._calc_ph_dim_single, args=[X, test_n, ms, i])
+            )
             threads[-1].start()
 
         for i in range(self.n_reruns):

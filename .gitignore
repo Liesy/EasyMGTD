@@ -161,6 +161,7 @@ cython_debug/
 
 # files
 *.json
+!run/config_example.json
 *.pkl
 *.txt
 *.bin

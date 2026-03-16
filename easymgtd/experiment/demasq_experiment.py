@@ -20,6 +20,7 @@ class DemasqConfig(BaseConfig):
         save_path (str): Directory for saving model weights. Default 'model_weight/'.
         epoch (int): Number of training epochs. Default 12.
     """
+
     need_finetune: bool = True
     need_save: bool = True
     batch_size: int = 1

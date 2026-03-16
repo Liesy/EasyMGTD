@@ -11,6 +11,7 @@ from ..auto import BaseExperiment, DetectOutput
 # BaseConfig: shared config base class with a generic update method
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class BaseConfig:
     """
@@ -36,6 +37,7 @@ class BaseConfig:
 # ---------------------------------------------------------------------------
 # init_detectors: unified detector initialization pattern
 # ---------------------------------------------------------------------------
+
 
 def init_detectors(detector, detector_class):
     """
@@ -65,6 +67,7 @@ def init_detectors(detector, detector_class):
 # load_incremental_data: shared load_data for incremental-style experiments
 # ---------------------------------------------------------------------------
 
+
 def load_incremental_data(experiment, data):
     """
     Load incremental/staged data format into an experiment instance.
@@ -89,6 +92,7 @@ def load_incremental_data(experiment, data):
 # ---------------------------------------------------------------------------
 # build_supervised_output: shared output construction for supervised experiments
 # ---------------------------------------------------------------------------
+
 
 def build_supervised_output(experiment, num_labels, pair=None, intermedia=None):
     """
@@ -139,6 +143,7 @@ def build_supervised_output(experiment, num_labels, pair=None, intermedia=None):
 # launch_with_dual_predictions: shared launch logic for threshold/perturb
 # ---------------------------------------------------------------------------
 
+
 def launch_with_dual_predictions(experiment, **config):
     """
     Launch method for experiments that may produce dual predictions
@@ -184,14 +189,10 @@ def launch_with_dual_predictions(experiment, **config):
             train_metric2 = experiment.cal_metrics(*train_pred[1])
             test_metric2 = experiment.cal_metrics(*test_pred[1])
             final_output.append(
-                DetectOutput(
-                    name="threshold", train=train_metric1, test=test_metric1
-                )
+                DetectOutput(name="threshold", train=train_metric1, test=test_metric1)
             )
             final_output.append(
-                DetectOutput(
-                    name="logistic", train=train_metric2, test=test_metric2
-                )
+                DetectOutput(name="logistic", train=train_metric2, test=test_metric2)
             )
         else:
             # Single classification method (logistic regression only)

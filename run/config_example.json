@@ -1,0 +1,311 @@
+{
+  "global": {
+    "train_size": 1000,
+    "test_size": 2000,
+    "seed": 3407,
+    "topics": ["STEM", "Humanities", "Social_sciences"],
+    "dataset": "AITextDetect"
+  },
+
+  "ll": {
+    "experiment_type": "threshold",
+    "base_models": ["meta-llama/Llama-2-7b-chat-hf"],
+    "detector_args": {
+      "load_in_k_bit": null
+    }
+  },
+
+  "rank": {
+    "experiment_type": "threshold",
+    "base_models": ["meta-llama/Llama-2-7b-chat-hf"],
+    "detector_args": {}
+  },
+
+  "rank_GLTR": {
+    "experiment_type": "threshold",
+    "base_models": ["meta-llama/Llama-2-7b-chat-hf"],
+    "detector_args": {}
+  },
+
+  "entropy": {
+    "experiment_type": "threshold",
+    "base_models": ["meta-llama/Llama-2-7b-chat-hf"],
+    "detector_args": {}
+  },
+
+  "LRR": {
+    "experiment_type": "threshold",
+    "base_models": ["meta-llama/Llama-2-7b-chat-hf"],
+    "detector_args": {}
+  },
+
+  "Binoculars": {
+    "experiment_type": "threshold",
+    "detector_args": {
+      "observer_model_name_or_path": "tiiuae/falcon-7b",
+      "performer_model_name_or_path": "tiiuae/falcon-7b-instruct",
+      "max_length": 1024,
+      "mode": "accuracy",
+      "threshold": "new"
+    }
+  },
+
+  "fast-detectGPT": {
+    "experiment_type": "perturb",
+    "detector_args": {
+      "scoring_model_name_or_path": "EleutherAI/gpt-neo-2.7B",
+      "reference_model_name_or_path": "EleutherAI/gpt-j-6b",
+      "discrepancy_analytic": false
+    },
+    "experiment_args": {
+      "span_length": 2,
+      "buffer_size": 1,
+      "mask_top_p": 1,
+      "pct_words_masked": 0.3,
+      "random_fills": false,
+      "n_perturbation_rounds": 1,
+      "n_perturbations": 10,
+      "criterion_score": "z"
+    }
+  },
+
+  "detectGPT": {
+    "experiment_type": "perturb",
+    "detector_args": {
+      "model_name_or_path": "openai-community/gpt2-medium",
+      "mask_model_name_or_path": "t5-large"
+    },
+    "experiment_args": {
+      "span_length": 2,
+      "buffer_size": 1,
+      "mask_top_p": 1,
+      "pct_words_masked": 0.3,
+      "random_fills": false,
+      "n_perturbation_rounds": 1,
+      "n_perturbations": 10,
+      "criterion_score": "z"
+    }
+  },
+
+  "NPR": {
+    "experiment_type": "perturb",
+    "detector_args": {
+      "model_name_or_path": "openai-community/gpt2-medium",
+      "mask_model_name_or_path": "t5-large"
+    },
+    "experiment_args": {
+      "span_length": 2,
+      "buffer_size": 1,
+      "mask_top_p": 1,
+      "pct_words_masked": 0.3,
+      "random_fills": false,
+      "n_perturbation_rounds": 1,
+      "n_perturbations": 10,
+      "criterion_score": "z"
+    }
+  },
+
+  "DNA-GPT": {
+    "experiment_type": "perturb",
+    "detector_args": {
+      "base_model_name_or_path": "gpt2",
+      "batch_size": 5,
+      "regen_number": 5,
+      "temperature": 1.0,
+      "truncate_ratio": 0.5,
+      "mode": "accuracy"
+    },
+    "experiment_args": {}
+  },
+
+  "LM-D": {
+    "experiment_type": "supervised",
+    "base_model_names": ["distilbert"],
+    "model_paths": {
+      "distilbert": "distilbert/distilbert-base-uncased",
+      "roberta-base": "FacebookAI/roberta-base"
+    },
+    "detector_args": {},
+    "experiment_args": {
+      "need_finetune": true,
+      "need_save": true,
+      "epochs": 3,
+      "batch_size": 64,
+      "save_path": "./exp_data/topic_models",
+      "lr": 5e-6,
+      "logging_steps": 30,
+      "weight_decay": 0.01,
+      "save_total_limit": 2,
+      "gradient_accumulation_steps": 1,
+      "swanlab_project": "EasyMGTD-SFT",
+      "disable_tqdm": true,
+      "pos_bit": 1
+    },
+    "train_size_max": 10000
+  },
+
+  "RADAR": {
+    "experiment_type": "supervised",
+    "detector_args": {
+      "model_name_or_path": "TrustSafeAI/RADAR-Vicuna-7B",
+      "tokenizer_path": "TrustSafeAI/RADAR-Vicuna-7B"
+    },
+    "experiment_args": {
+      "need_finetune": false
+    }
+  },
+
+  "OpenAI-D": {
+    "experiment_type": "supervised",
+    "detector_args": {
+      "model_name_or_path": "distilbert/distilbert-base-uncased",
+      "tokenizer_path": "distilbert/distilbert-base-uncased"
+    },
+    "experiment_args": {
+      "need_finetune": true,
+      "need_save": true,
+      "epochs": 3,
+      "batch_size": 64,
+      "lr": 5e-6,
+      "logging_steps": 30,
+      "weight_decay": 0.01,
+      "save_total_limit": 2,
+      "gradient_accumulation_steps": 1,
+      "swanlab_project": "EasyMGTD-SFT",
+      "pos_bit": 1,
+      "save_path": "./exp_data/supervised_models"
+    }
+  },
+
+  "ConDA": {
+    "experiment_type": "supervised",
+    "detector_args": {
+      "model_name_or_path": "distilbert/distilbert-base-uncased",
+      "tokenizer_path": "distilbert/distilbert-base-uncased"
+    },
+    "experiment_args": {
+      "need_finetune": true,
+      "need_save": true,
+      "epochs": 3,
+      "batch_size": 64,
+      "lr": 5e-6,
+      "logging_steps": 30,
+      "weight_decay": 0.01,
+      "save_total_limit": 2,
+      "gradient_accumulation_steps": 1,
+      "swanlab_project": "EasyMGTD-SFT",
+      "pos_bit": 1,
+      "save_path": "./exp_data/supervised_models"
+    }
+  },
+
+  "ChatGPT-D": {
+    "experiment_type": "supervised",
+    "detector_args": {
+      "model_name_or_path": "Hello-SimpleAI/chatgpt-detector-roberta",
+      "tokenizer_path": "Hello-SimpleAI/chatgpt-detector-roberta"
+    },
+    "experiment_args": {
+      "need_finetune": false
+    }
+  },
+
+  "demasq": {
+    "experiment_type": "demasq",
+    "detector_args": {},
+    "experiment_args": {
+      "need_finetune": true,
+      "need_save": true,
+      "batch_size": 1,
+      "save_path": "model_weight/",
+      "epoch": 12
+    }
+  },
+
+  "GPTZero": {
+    "experiment_type": "gptzero",
+    "detector_args": {
+      "api_key": ""
+    }
+  },
+
+  "incremental": {
+    "experiment_type": "incremental",
+    "detector_args": {
+      "model_name_or_path": "distilbert/distilbert-base-uncased",
+      "num_labels": 2,
+      "lwf_reg": 0.5,
+      "cache_size": 100,
+      "bic": false
+    },
+    "experiment_args": {
+      "need_finetune": true,
+      "need_save": true,
+      "batch_size": 16,
+      "pos_bit": 1,
+      "epochs": 1,
+      "save_path": "finetuned/",
+      "gradient_accumulation_steps": 1,
+      "lr": 5e-6,
+      "lr_factor": 5
+    }
+  },
+
+  "baseline": {
+    "experiment_type": "fewshot",
+    "detector_args": {
+      "model_name_or_path": "distilbert/distilbert-base-uncased",
+      "kshot": 5
+    },
+    "experiment_args": {
+      "need_finetune": false,
+      "need_save": false,
+      "kshot": 5,
+      "batch_size": 16,
+      "epochs": 1,
+      "lr": 5e-6,
+      "gradient_accumulation_steps": 1,
+      "save_path": "finetuned/",
+      "classifier": "SVM"
+    }
+  },
+
+  "generate": {
+    "experiment_type": "fewshot",
+    "detector_args": {
+      "model_name_or_path": "distilbert/distilbert-base-uncased",
+      "kshot": 5
+    },
+    "experiment_args": {
+      "need_finetune": false,
+      "need_save": false,
+      "kshot": 5,
+      "batch_size": 16,
+      "epochs": 1,
+      "lr": 5e-6,
+      "gradient_accumulation_steps": 1,
+      "save_path": "finetuned/",
+      "classifier": "SVM"
+    }
+  },
+
+  "rn": {
+    "experiment_type": "fewshot",
+    "detector_args": {
+      "model_name_or_path": "distilbert/distilbert-base-uncased",
+      "kshot": 5,
+      "num_classes": 6,
+      "num_query": 15
+    },
+    "experiment_args": {
+      "need_finetune": false,
+      "need_save": false,
+      "kshot": 5,
+      "batch_size": 16,
+      "epochs": 1,
+      "lr": 5e-6,
+      "gradient_accumulation_steps": 1,
+      "save_path": "finetuned/"
+    }
+  }
+}

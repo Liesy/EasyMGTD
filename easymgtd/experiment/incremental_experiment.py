@@ -31,6 +31,7 @@ class IncrementalConfig(BaseConfig):
         lr (float): Learning rate. Default 5e-6.
         lr_factor (int): Learning rate scaling factor. Default 5.
     """
+
     need_finetune: bool = False
     name: str = ""
     need_save: bool = True
@@ -92,12 +93,8 @@ class IncrementalExperiment(BaseExperiment):
         if pair:
             # Run detection first, then pass raw output to build_supervised_output
             raw_output = detector.detect(pair[0], disable_tqdm=True)
-            return build_supervised_output(
-                self, num_labels, pair=(raw_output, pair[1])
-            )
-        return build_supervised_output(
-            self, num_labels, intermedia=intermedia
-        )
+            return build_supervised_output(self, num_labels, pair=(raw_output, pair[1]))
+        return build_supervised_output(self, num_labels, intermedia=intermedia)
 
     def predict(self, **kargs):
         """

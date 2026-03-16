@@ -3,8 +3,9 @@ import os
 import json
 import tqdm
 import pandas as pd
-from datasets import load_dataset
+from datasets import load_dataset, Dataset
 from concurrent.futures import ThreadPoolExecutor
+import tiktoken
 
 from easymgtd.utils import setup_seed
 
@@ -284,6 +285,106 @@ def load_old_data(name, detectLLM, path=None):
     return _build_split_and_save(res, split_ratio=0.8)
 
 
+def _load_aitextdetect(repo: str, name: str, split: str) -> Dataset:
+    """
+    Directly load JSON files for AITextDetect dataset to bypass
+    the deprecation of script-based loading in datasets>=4.2.0.
+    """
+    _source_dict = {
+        "Physics": ["wiki", "arxiv"],
+        "Medicine": ["wiki"],
+        "Biology": ["wiki", "arxiv"],
+        "Electrical_engineering": ["wiki", "arxiv"],
+        "Computer_science": ["wiki", "arxiv"],
+        "Literature": ["wiki", "gutenberg"],
+        "History": ["wiki", "gutenberg"],
+        "Education": ["wiki", "gutenberg"],
+        "Art": ["wiki", "gutenberg"],
+        "Law": ["wiki", "gutenberg"],
+        "Management": ["wiki"],
+        "Philosophy": ["wiki", "gutenberg"],
+        "Economy": ["wiki", "Finance_wiki", "arxiv"],
+        "Math": ["wiki", "arxiv"],
+        "Statistics": ["wiki", "arxiv"],
+        "Chemistry": ["wiki"],
+    }
+
+    # Resolve repo directory (if repo is a .py file, get its directory)
+    base_dir = repo
+    if repo.endswith(".py"):
+        base_dir = os.path.dirname(repo)
+    if not os.path.isdir(base_dir):
+        # Fallback to standard huggingface load if repo is remote
+        return load_dataset(repo, trust_remote_code=True, name=name, split=split)
+
+    encoding = tiktoken.get_encoding("cl100k_base")
+
+    def _truncate_text(text, max_tokens=2048):
+        tokens = encoding.encode(text, allowed_special={"<|endoftext|>"})
+        if len(tokens) > max_tokens:
+            tokens = tokens[:max_tokens]
+            truncated_text = encoding.decode(tokens)
+            last_period_idx = truncated_text.rfind("。")
+            if last_period_idx == -1:
+                last_period_idx = truncated_text.rfind(".")
+            if last_period_idx != -1:
+                truncated_text = truncated_text[: last_period_idx + 1]
+            return truncated_text
+        return text
+
+    # Identify files
+    filepaths = []
+    if name == "Human":
+        dest_dir = os.path.join(base_dir, "Human", split)
+        sources = _source_dict.get(split, [])
+        for src in sources:
+            fn = os.path.join(dest_dir, f"{split}_{src}_new.json")
+            if os.path.exists(fn):
+                filepaths.append(fn)
+    else:
+        fn = os.path.join(base_dir, f"{name}_new", f"{split}_task3.json")
+        if os.path.exists(fn):
+            filepaths.append(fn)
+
+    if not filepaths:
+        raise FileNotFoundError(
+            f"Could not find local data for AITextDetect: {name} - {split} in {base_dir}"
+        )
+
+    records = []
+    global_key = 0
+    for file in filepaths:
+        with open(file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        for row in data:
+            if not row["text"].strip():
+                continue
+            text = _truncate_text(row["text"], max_tokens=2048)
+
+            meta = None
+            if name == "Human":
+                meta = {
+                    k: row["meta"][k]
+                    for k in ["data_source", "category", "other"]
+                    if k in row.get("meta", {})
+                }
+                if meta.get("other") and "level" in meta["other"]:
+                    meta["other"] = None
+
+            records.append(
+                {
+                    "id": row.get("id", global_key),
+                    "text": text,
+                    "file": os.path.basename(file),
+                    "meta": meta,
+                }
+            )
+            global_key += 1
+
+    return Dataset.from_pandas(pd.DataFrame(records))
+
+
 def load_subject_data(detectLLM, category, seed=0, repo=DATASET_AITextDetect):
     saved_data_path = os.path.join(
         SAVED_DATA_DIR, str(seed), f"{detectLLM}_{category}.json"
@@ -294,14 +395,10 @@ def load_subject_data(detectLLM, category, seed=0, repo=DATASET_AITextDetect):
 
     print("loading human data")
 
-    subject_human_data = load_dataset(
-        repo, trust_remote_code=True, name="Human", split=category
-    )
+    subject_human_data = _load_aitextdetect(repo, name="Human", split=category)
 
     print("loading machine data")
-    mgt_data = load_dataset(
-        repo, trust_remote_code=True, name=detectLLM, split=category
-    )
+    mgt_data = _load_aitextdetect(repo, name=detectLLM, split=category)
 
     print("data loaded")
 
@@ -334,12 +431,8 @@ def load_topic_data(detectLLM, topic, seed=0, repo=DATASET_AITextDetect):
     all_data[topic] = []
     for subject in CATEGORIES:
         if TOPIC_MAPPING[subject] == topic:
-            subject_human_data = load_dataset(
-                repo, trust_remote_code=True, name="Human", split=subject
-            )
-            mgt_data = load_dataset(
-                repo, trust_remote_code=True, name=detectLLM, split=subject
-            )
+            subject_human_data = _load_aitextdetect(repo, name="Human", split=subject)
+            mgt_data = _load_aitextdetect(repo, name=detectLLM, split=subject)
             all_data["human"].append(subject_human_data)
             all_data[topic].append(mgt_data)
 
@@ -368,21 +461,18 @@ def load_topic_data(detectLLM, topic, seed=0, repo=DATASET_AITextDetect):
 
 
 def download_data(model_name, category, repo=DATASET_AITextDetect):
-    return load_dataset(
+    return _load_aitextdetect(
         repo,
-        trust_remote_code=True,
         name=model_name,
         split=category,
-        # cache_dir=cache_dir
     )
 
 
 def prepare_attribution(category="Art", seed=0, repo=DATASET_AITextDetect):
     setup_seed(seed)
     # human
-    subject_human_data = load_dataset(
+    subject_human_data = _load_aitextdetect(
         repo,
-        trust_remote_code=True,
         name="Human",
         split=category,
     )
@@ -443,17 +533,13 @@ def prepare_attribution_topic(topic="STEM", seed=0, repo=DATASET_AITextDetect):
         for subject in CATEGORIES:
             if TOPIC_MAPPING[subject] != topic:
                 continue
-            mgt_data = load_dataset(
-                repo, trust_remote_code=True, name=model, split=subject
-            )
+            mgt_data = _load_aitextdetect(repo, name=model, split=subject)
             all_data[model].append(mgt_data)
 
     for subject in CATEGORIES:
         if TOPIC_MAPPING[subject] != topic:
             continue
-        subject_human_data = load_dataset(
-            repo, trust_remote_code=True, name="Human", split=subject
-        )
+        subject_human_data = _load_aitextdetect(repo, name="Human", split=subject)
         all_data["human"].append(subject_human_data)
 
     # find the smallest length, balance between subjects
@@ -552,9 +638,8 @@ def prepare_incremental(
     setup_seed(seed)
 
     # Load human data
-    subject_human_data = load_dataset(
+    subject_human_data = _load_aitextdetect(
         repo,
-        trust_remote_code=True,
         name="Human",
         split=category,
     )
@@ -709,18 +794,14 @@ def prepare_incremental_topic(order: list, topic, seed=3407, repo=DATASET_AIText
     for subject in CATEGORIES:
         if TOPIC_MAPPING[subject] == topic:
             # repo = "AITextDetect/AI_Polish_clean"
-            subject_human_data = load_dataset(
-                repo, trust_remote_code=True, name="Human", split=subject
-            )
+            subject_human_data = _load_aitextdetect(repo, name="Human", split=subject)
             all_data["human"].append(subject_human_data)
 
     # Load models data
     for detectLLM in all_models:
         for subject in CATEGORIES:
             if TOPIC_MAPPING[subject] == topic:
-                mgt_data = load_dataset(
-                    repo, trust_remote_code=True, name=detectLLM, split=subject
-                )
+                mgt_data = _load_aitextdetect(repo, name=detectLLM, split=subject)
                 all_data[detectLLM].append(mgt_data)
 
     # combine subjects into one list, each subject has the same number of data

@@ -30,6 +30,7 @@ class SupervisedConfig(BaseConfig):
         save_total_limit (int): Maximum number of checkpoints to keep. Default 2.
         swanlab_project (str): SwanLab project name for logging. Default 'EasyMGTD'.
     """
+
     need_finetune: bool = False
     name: str = ""
     need_save: bool = True

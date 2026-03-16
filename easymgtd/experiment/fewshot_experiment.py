@@ -33,6 +33,7 @@ class FewShotConfig(BaseConfig):
         kshot (int): Number of examples per class for few-shot. Default 5.
         classifier (str): Classifier type to use. Default 'SVM'.
     """
+
     need_finetune: bool = False
     name: str = ""
     need_save: bool = True
@@ -98,12 +99,8 @@ class FewShotExperiment(BaseExperiment):
         if pair:
             # Run detection first, then pass raw output to build_supervised_output
             raw_output = detector.detect(pair[0], disable_tqdm=True)
-            return build_supervised_output(
-                self, num_labels, pair=(raw_output, pair[1])
-            )
-        return build_supervised_output(
-            self, num_labels, intermedia=intermedia
-        )
+            return build_supervised_output(self, num_labels, pair=(raw_output, pair[1]))
+        return build_supervised_output(self, num_labels, intermedia=intermedia)
 
     def predict(self, **kargs):
         """

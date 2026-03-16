@@ -3,18 +3,16 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.init import kaiming_normal_
+from torch.utils.data import DataLoader, WeightedRandomSampler
+from torch.optim import AdamW
 import copy
+import numpy as np
+from tqdm import tqdm
+from sklearn.mixture import GaussianMixture
+from transformers import Trainer, TrainingArguments
+from transformers import DistilBertPreTrainedModel, RobertaPreTrainedModel, XLMRobertaPreTrainedModel, DebertaV2PreTrainedModel
 from ..loading.model_loader import load_pretrained_supervise
 from ..auto import BaseDetector
-from transformers import Trainer
-from torch.utils.data import DataLoader
-from sklearn.mixture import GaussianMixture
-from tqdm import tqdm
-import numpy as np
-from transformers import DistilBertPreTrainedModel, RobertaPreTrainedModel, XLMRobertaPreTrainedModel,DebertaV2PreTrainedModel
-from transformers import Trainer, TrainingArguments, AdamW
-from torch.utils.data import WeightedRandomSampler, DataLoader
-import numpy as np
 
 class ContinualDataset(torch.utils.data.Dataset):
     def __init__(self, encodings, labels, new_class):

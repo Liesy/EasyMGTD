@@ -29,6 +29,7 @@ class PerturbConfig(BaseConfig):
         criterion_score (str): Scoring criterion, e.g. 'z' for z-score. Default 'z'.
         seed (int): Random seed for reproducibility. Default 0.
     """
+
     span_length: int = 2
     buffer_size: int = 1
     mask_top_p: float = 1

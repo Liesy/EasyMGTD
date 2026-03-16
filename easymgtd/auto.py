@@ -1,51 +1,60 @@
 from abc import ABC, abstractmethod
 from .loading import load_pretrained
 from dataclasses import dataclass
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    roc_auc_score,
+    confusion_matrix,
+)
 import warnings
 import numpy as np
+
 DETECTOR_MAPPING = {
-    'gptzero' : 'easymgtd.methods.GPTZeroAPI',
-    'll' : 'easymgtd.methods.LLDetector',
-    'rank' : 'easymgtd.methods.RankDetector',
-    'rank_GLTR' : 'easymgtd.methods.RankGLTRDetector',
-    'entropy' : 'easymgtd.methods.EntropyDetector',
-    'detectGPT' : 'easymgtd.methods.DetectGPTDetector',
-    'fast-detectGPT' : 'easymgtd.methods.FastDetectGPTDetector',
-    'Binoculars' : 'easymgtd.methods.BinocularsDetector',
-    'DNA-GPT' : 'easymgtd.methods.DNAGPTDetector',
-    'NPR' : 'easymgtd.methods.NPRDetector',
-    'LRR' : 'easymgtd.methods.LRRDetector',
-    'GPTZero': 'easymgtd.methods.GPTZeroDetector',
-    'RADAR': 'easymgtd.methods.RadarDetector',
-    'OpenAI-D':'easymgtd.methods.SupervisedDetector',
-    'ConDA':'easymgtd.methods.SupervisedDetector',
-    'ChatGPT-D':'easymgtd.methods.SupervisedDetector',
-    'LM-D':'easymgtd.methods.SupervisedDetector',
-    'demasq' : 'easymgtd.methods.DemasqDetector',
-    'incremental': 'easymgtd.methods.IncrementalDetector',
-    'baseline':'easymgtd.methods.BaselineDetector',
-    'generate':'easymgtd.methods.GenerateDetector',
-    'rn': 'easymgtd.methods.RNDetector'
+    "gptzero": "easymgtd.methods.GPTZeroAPI",
+    "ll": "easymgtd.methods.LLDetector",
+    "rank": "easymgtd.methods.RankDetector",
+    "rank_GLTR": "easymgtd.methods.RankGLTRDetector",
+    "entropy": "easymgtd.methods.EntropyDetector",
+    "detectGPT": "easymgtd.methods.DetectGPTDetector",
+    "fast-detectGPT": "easymgtd.methods.FastDetectGPTDetector",
+    "Binoculars": "easymgtd.methods.BinocularsDetector",
+    "DNA-GPT": "easymgtd.methods.DNAGPTDetector",
+    "NPR": "easymgtd.methods.NPRDetector",
+    "LRR": "easymgtd.methods.LRRDetector",
+    "GPTZero": "easymgtd.methods.GPTZeroDetector",
+    "RADAR": "easymgtd.methods.RadarDetector",
+    "OpenAI-D": "easymgtd.methods.SupervisedDetector",
+    "ConDA": "easymgtd.methods.SupervisedDetector",
+    "ChatGPT-D": "easymgtd.methods.SupervisedDetector",
+    "LM-D": "easymgtd.methods.SupervisedDetector",
+    "demasq": "easymgtd.methods.DemasqDetector",
+    "incremental": "easymgtd.methods.IncrementalDetector",
+    "baseline": "easymgtd.methods.BaselineDetector",
+    "generate": "easymgtd.methods.GenerateDetector",
+    "rn": "easymgtd.methods.RNDetector",
 }
 
 EXPERIMENT_MAPPING = {
-    'threshold' : 'easymgtd.experiment.ThresholdExperiment',
-    'perturb' : 'easymgtd.experiment.PerturbExperiment',
-    'supervised' : 'easymgtd.experiment.SupervisedExperiment',
-    'demasq' : 'easymgtd.experiment.DemasqExperiment',
-    'incremental' : 'easymgtd.experiment.IncrementalExperiment',
-    'incremental_threshold':'easymgtd.experiment.IncrementalThresholdExperiment',
-    'fewshot':'easymgtd.experiment.FewShotExperiment'
+    "threshold": "easymgtd.experiment.ThresholdExperiment",
+    "perturb": "easymgtd.experiment.PerturbExperiment",
+    "supervised": "easymgtd.experiment.SupervisedExperiment",
+    "demasq": "easymgtd.experiment.DemasqExperiment",
+    "incremental": "easymgtd.experiment.IncrementalExperiment",
+    "incremental_threshold": "easymgtd.experiment.IncrementalThresholdExperiment",
+    "fewshot": "easymgtd.experiment.FewShotExperiment",
 }
 
+
 class BaseDetector(ABC):
-    def __init__(self,name) -> None:
+    def __init__(self, name) -> None:
         self.name = name
 
     @abstractmethod
     def detect(self, **kargs):
-        raise NotImplementedError('Invalid detector, implement detect first.')
+        raise NotImplementedError("Invalid detector, implement detect first.")
 
 
 @dataclass
@@ -55,7 +64,7 @@ class Metric:
     recall: float = None
     f1: float = None
     auc: float = None
-    conf_m: np.ndarray = None # confusion matrix for multi-class classification    
+    conf_m: np.ndarray = None  # confusion matrix for multi-class classification
 
 
 @dataclass
@@ -64,11 +73,11 @@ class DetectOutput:
     predictions = None
     train: Metric = None
     test: Metric = None
-    clf  = None
+    clf = None
 
 
 class ModelBasedDetector(BaseDetector):
-    def __init__(self,name,**kargs) -> None:
+    def __init__(self, name, **kargs) -> None:
         super().__init__(name)
 
 
@@ -76,9 +85,9 @@ class BaseExperiment(ABC):
     def __init__(self, **kargs) -> None:
         self.loaded = False
 
-    @abstractmethod 
+    @abstractmethod
     def predict(self):
-        raise NotImplementedError('Invalid Experiment, implement predict first.')
+        raise NotImplementedError("Invalid Experiment, implement predict first.")
 
     def data_prepare(self, x, y):
         x, y = np.array(x), np.array(y)
@@ -87,7 +96,7 @@ class BaseExperiment(ABC):
         y = y[select_index]
         x_train = np.expand_dims(x, axis=-1)
         return x_train, y
-    
+
     def run_clf(self, clf, x, y):
         # Clip extreme values
         x = np.clip(x, -1e10, 1e10)
@@ -110,36 +119,32 @@ class BaseExperiment(ABC):
             return Metric(acc, precision, recall, f1, auc)
         else:
             acc = accuracy_score(label, pred_label)
-            precision = precision_score(label, pred_label, average='weighted')
-            recall = recall_score(label, pred_label, average='weighted')
-            f1 = f1_score(label, pred_label, average='weighted')
+            precision = precision_score(label, pred_label, average="weighted")
+            recall = recall_score(label, pred_label, average="weighted")
+            f1 = f1_score(label, pred_label, average="weighted")
             auc = -1.0
             conf_m = confusion_matrix(label, pred_label)
             print(conf_m)
             return Metric(acc, precision, recall, f1, auc, conf_m)
-    
 
     def load_data(self, data):
         self.loaded = True
-        self.train_text = data['train']['text']
-        self.train_label = data['train']['label']
-        self.test_text = data['test']['text']
-        self.test_label = data['test']['label']
+        self.train_text = data["train"]["text"]
+        self.train_label = data["train"]["label"]
+        self.test_text = data["test"]["text"]
+        self.test_label = data["test"]["label"]
 
     def launch(self, **config) -> list[DetectOutput]:
         if not self.loaded:
-            raise RuntimeError('You should load the data first, call load_data.')
-        print('Calculate result for each data point')
+            raise RuntimeError("You should load the data first, call load_data.")
+        print("Calculate result for each data point")
         predict_list = self.predict(**config)
         final_output = []
         for detector_predict in predict_list:
-            for key in ['intermedia_pred', 'test_pred', 'train_pred']:
+            for key in ["intermedia_pred", "test_pred", "train_pred"]:
                 if key in detector_predict:
                     test_metric = self.cal_metrics(*detector_predict[key])
-                    final_output.append(DetectOutput(
-                        name = key,
-                        test = test_metric
-                    ))
+                    final_output.append(DetectOutput(name=key, test=test_metric))
 
             # if is_eval:
             #     test_metric = self.cal_metrics(*detector_predict['test_pred'])
@@ -155,7 +160,7 @@ class BaseExperiment(ABC):
             #         train = train_metric,
             #         test = test_metric
             #     ))
-        return final_output 
+        return final_output
 
 
 class AutoDetector:
@@ -164,25 +169,30 @@ class AutoDetector:
     @classmethod
     def from_detector_name(cls, name, *args, **kargs) -> BaseDetector:
         if name not in cls._detector_mapping:
-            raise ValueError(f"Unrecognized detector name: {name}, name should be one of", cls._detector_mapping.keys())
+            raise ValueError(
+                f"Unrecognized detector name: {name}, name should be one of",
+                cls._detector_mapping.keys(),
+            )
         metric_class_path = cls._detector_mapping[name]
-        module_name, class_name = metric_class_path.rsplit('.', 1)
-        
+        module_name, class_name = metric_class_path.rsplit(".", 1)
+
         # Dynamically import the module and retrieve the class
         metric_module = __import__(module_name, fromlist=[class_name])
         metric_class = getattr(metric_module, class_name)
-        return metric_class(name,*args, **kargs)
-    
+        return metric_class(name, *args, **kargs)
+
 
 class AutoExperiment:
     _experiment_mapping = EXPERIMENT_MAPPING
 
     @classmethod
-    def from_experiment_name(cls, experiment_name, detector, *args, **kargs) -> BaseExperiment:
+    def from_experiment_name(
+        cls, experiment_name, detector, *args, **kargs
+    ) -> BaseExperiment:
         if experiment_name not in cls._experiment_mapping:
             raise ValueError(f"Unrecognized metric name: {experiment_name}")
         experiment_class_path = cls._experiment_mapping[experiment_name]
-        module_name, class_name = experiment_class_path.rsplit('.', 1)
+        module_name, class_name = experiment_class_path.rsplit(".", 1)
         # Dynamically import the module and retrieve the class
         experiment_module = __import__(module_name, fromlist=[class_name])
         experiment_class = getattr(experiment_module, class_name)

@@ -1,15 +1,19 @@
 import numpy as np
 import torch
+import torch.nn as nn
+import torch.nn.functional as F
 from tqdm import tqdm
 from torch.utils.data import DataLoader
-from transformers import AdamW
+from torch.optim import AdamW
+from transformers import (
+    PreTrainedModel,
+    PreTrainedTokenizerBase,
+    Trainer,
+    TrainingArguments,
+)
+from swanlab.integration.transformers import SwanLabCallback
 from ..auto import BaseDetector
 from ..loading import load_pretrained_supervise
-from transformers import PreTrainedModel, PreTrainedTokenizerBase
-from transformers import Trainer, TrainingArguments, AdamW
-from torch.utils.data import DataLoader
-from tqdm import tqdm
-from swanlab.integration.transformers import SwanLabCallback
 
 
 class CustomDataset(torch.utils.data.Dataset):
@@ -49,15 +53,6 @@ class MetricTrainer(Trainer):
         loss_fn = CircleLoss()
         npmc_loss = loss_fn(embeddings, labels)
         return (npmc_loss + ce_loss, outputs) if return_outputs else npmc_loss + ce_loss
-
-
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
 
 
 class CircleLoss(nn.Module):
