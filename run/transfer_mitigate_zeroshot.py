@@ -9,7 +9,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
-from mgtbench.auto import Metric, DetectOutput
+from easymgtd.auto import Metric, DetectOutput
 
 METHODS = ['ll', 'rank', 'rank_GLTR', 'entropy', 'LRR',
            'Binoculars', 'fast-detectGPT']

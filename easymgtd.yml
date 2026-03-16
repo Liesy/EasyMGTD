@@ -1,4 +1,4 @@
-name: mgtbench2
+name: easymgtd
 channels:
   - defaults
 dependencies:

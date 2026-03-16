@@ -14,15 +14,15 @@ order = [['gpt35', 'Mixtral','Moonshot',], ['Llama3','gpt-4omini']]
 orders = [order]
 TOPICS = ['STEM', 'Humanities', 'Social_sciences']
 # TOPICS = ['STEM', ]
-from mgtbench import AutoDetector, AutoExperiment
-from mgtbench.experiment import SupervisedConfig
+from easymgtd import AutoDetector, AutoExperiment
+from easymgtd.experiment import SupervisedConfig
 import torch
 import numpy as np
 import random
 import os
 import pickle
-from mgtbench.methods import supervised
-from mgtbench.loading import load_incremental_topic
+from easymgtd.methods import supervised
+from easymgtd.loading import load_incremental_topic
 result = {}
 # Function to load pickle file
 models= ['/data1/models/roberta-base', '/data1/models/distilbert-base-uncased', '/data1/models/deberta-v3-base']

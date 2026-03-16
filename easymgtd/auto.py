@@ -5,38 +5,38 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 import warnings
 import numpy as np
 DETECTOR_MAPPING = {
-    'gptzero' : 'mgtbench.methods.GPTZeroAPI',
-    'll' : 'mgtbench.methods.LLDetector',
-    'rank' : 'mgtbench.methods.RankDetector',
-    'rank_GLTR' : 'mgtbench.methods.RankGLTRDetector',
-    'entropy' : 'mgtbench.methods.EntropyDetector',
-    'detectGPT' : 'mgtbench.methods.DetectGPTDetector',
-    'fast-detectGPT' : 'mgtbench.methods.FastDetectGPTDetector',
-    'Binoculars' : 'mgtbench.methods.BinocularsDetector',
-    'DNA-GPT' : 'mgtbench.methods.DNAGPTDetector',
-    'NPR' : 'mgtbench.methods.NPRDetector',
-    'LRR' : 'mgtbench.methods.LRRDetector',
-    'GPTZero': 'mgtbench.methods.GPTZeroDetector',
-    'RADAR': 'mgtbench.methods.RadarDetector',
-    'OpenAI-D':'mgtbench.methods.SupervisedDetector',
-    'ConDA':'mgtbench.methods.SupervisedDetector',
-    'ChatGPT-D':'mgtbench.methods.SupervisedDetector',
-    'LM-D':'mgtbench.methods.SupervisedDetector',
-    'demasq' : 'mgtbench.methods.DemasqDetector',
-    'incremental': 'mgtbench.methods.IncrementalDetector',
-    'baseline':'mgtbench.methods.BaselineDetector',
-    'generate':'mgtbench.methods.GenerateDetector',
-    'rn': 'mgtbench.methods.RNDetector'
+    'gptzero' : 'easymgtd.methods.GPTZeroAPI',
+    'll' : 'easymgtd.methods.LLDetector',
+    'rank' : 'easymgtd.methods.RankDetector',
+    'rank_GLTR' : 'easymgtd.methods.RankGLTRDetector',
+    'entropy' : 'easymgtd.methods.EntropyDetector',
+    'detectGPT' : 'easymgtd.methods.DetectGPTDetector',
+    'fast-detectGPT' : 'easymgtd.methods.FastDetectGPTDetector',
+    'Binoculars' : 'easymgtd.methods.BinocularsDetector',
+    'DNA-GPT' : 'easymgtd.methods.DNAGPTDetector',
+    'NPR' : 'easymgtd.methods.NPRDetector',
+    'LRR' : 'easymgtd.methods.LRRDetector',
+    'GPTZero': 'easymgtd.methods.GPTZeroDetector',
+    'RADAR': 'easymgtd.methods.RadarDetector',
+    'OpenAI-D':'easymgtd.methods.SupervisedDetector',
+    'ConDA':'easymgtd.methods.SupervisedDetector',
+    'ChatGPT-D':'easymgtd.methods.SupervisedDetector',
+    'LM-D':'easymgtd.methods.SupervisedDetector',
+    'demasq' : 'easymgtd.methods.DemasqDetector',
+    'incremental': 'easymgtd.methods.IncrementalDetector',
+    'baseline':'easymgtd.methods.BaselineDetector',
+    'generate':'easymgtd.methods.GenerateDetector',
+    'rn': 'easymgtd.methods.RNDetector'
 }
 
 EXPERIMENT_MAPPING = {
-    'threshold' : 'mgtbench.experiment.ThresholdExperiment',
-    'perturb' : 'mgtbench.experiment.PerturbExperiment',
-    'supervised' : 'mgtbench.experiment.SupervisedExperiment',
-    'demasq' : 'mgtbench.experiment.DemasqExperiment',
-    'incremental' : 'mgtbench.experiment.IncrementalExperiment',
-    'incremental_threshold':'mgtbench.experiment.IncrementalThresholdExperiment',
-    'fewshot':'mgtbench.experiment.FewShotExperiment'
+    'threshold' : 'easymgtd.experiment.ThresholdExperiment',
+    'perturb' : 'easymgtd.experiment.PerturbExperiment',
+    'supervised' : 'easymgtd.experiment.SupervisedExperiment',
+    'demasq' : 'easymgtd.experiment.DemasqExperiment',
+    'incremental' : 'easymgtd.experiment.IncrementalExperiment',
+    'incremental_threshold':'easymgtd.experiment.IncrementalThresholdExperiment',
+    'fewshot':'easymgtd.experiment.FewShotExperiment'
 }
 
 class BaseDetector(ABC):

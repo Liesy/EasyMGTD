@@ -2,7 +2,7 @@ import os
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"   # see issue #152
 order = [['gpt35', 'Mixtral','Moonshot','Llama3',], ['gpt-4omini']]
 TOPICS = ['STEM', 'Humanities', 'Social_sciences']
-from mgtbench import AutoDetector, AutoExperiment
+from easymgtd import AutoDetector, AutoExperiment
 import torch
 import numpy as np
 import random
@@ -48,7 +48,7 @@ def get_detector(name):
                                                     )
     return detector
 
-from mgtbench.loading import load_incremental_topic
+from easymgtd.loading import load_incremental_topic
 import os
 import pickle
 from multiprocessing import Process, Queue

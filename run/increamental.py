@@ -11,7 +11,7 @@ os.environ["CUDA_VISIBLE_DEVICES"]="3"
 order = [['gpt35', 'Mixtral','Moonshot', 'Llama3'], ['gpt-4omini']]
 orders = [order]
 TOPICS = ['STEM', 'Humanities', 'Social_sciences']
-from mgtbench import AutoDetector, AutoExperiment
+from easymgtd import AutoDetector, AutoExperiment
 import torch
 import numpy as np
 import random
@@ -27,7 +27,7 @@ def setup_seed(seed):
     torch.backends.cudnn.deterministic = True
 setup_seed(3407)
 
-from mgtbench.loading import load_incremental_topic
+from easymgtd.loading import load_incremental_topic
 result = {}
 # Function to load pickle file
 # model= '/data1/models/roberta-base'

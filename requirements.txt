@@ -17,3 +17,5 @@ tqdm==4.66.5
 transformers==4.45.2
 xgboost==2.1.4
 protobuf==5.29.3
+python-dotenv
+swanlab

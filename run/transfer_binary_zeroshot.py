@@ -5,10 +5,10 @@ import argparse
 import torch
 import csv
 
-from mgtbench import AutoDetector, AutoExperiment
-from mgtbench.loading.dataloader import load_topic_data
-from mgtbench.utils import setup_seed
-from mgtbench.auto import DetectOutput
+from easymgtd import AutoDetector, AutoExperiment
+from easymgtd.loading.dataloader import load_topic_data
+from easymgtd.utils import setup_seed
+from easymgtd.auto import DetectOutput
 
 METHODS = ['ll', 'rank', 'rank_GLTR', 'entropy', 'LRR',
            'Binoculars', 'fast-detectGPT']

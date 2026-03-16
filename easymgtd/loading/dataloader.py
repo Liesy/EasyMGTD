@@ -6,7 +6,17 @@ import pandas as pd
 from datasets import load_dataset
 from concurrent.futures import ThreadPoolExecutor
 
-from mgtbench.utils import setup_seed
+from easymgtd.utils import setup_seed
+
+# ==============================================================================
+# Environment Configuration
+# ==============================================================================
+
+DATASET_AITextDetect = os.getenv("DATASET_AITextDetect", "AITextDetect/AI_Polish_clean")
+DATASET_DIR_OTHERS = os.getenv("DATASET_DIR_OTHERS", "datasets")
+DATASET_DIR_OLD = os.getenv("DATASET_DIR_OLD", "data")
+
+SAVED_DATA_DIR = os.getenv("DATASET_DIR_SAVE", "exp_data")
 
 # ==============================================================================
 # Helper functions for data parsing, balancing, and train/test splits
@@ -108,7 +118,7 @@ TOPIC_MAPPING = {
     "Education": "Social_sciences",
 }
 
-from mgtbench.utils import setup_seed
+from easymgtd.utils import setup_seed
 
 
 def process_spaces(text):
@@ -157,7 +167,9 @@ def check_period(texts):
     return texts
 
 
-def load_TruthfulQA(detectLLM, path="datasets/TruthfulQA_LLMs.csv"):
+def load_TruthfulQA(detectLLM, path=None):
+    if path is None:
+        path = os.path.join(DATASET_DIR_OTHERS, "TruthfulQA_LLMs.csv")
     f = pd.read_csv(path)
     q = f["Question"].tolist()
     a_human = f["Best Answer"].tolist()
@@ -179,7 +191,9 @@ def load_TruthfulQA(detectLLM, path="datasets/TruthfulQA_LLMs.csv"):
     return _build_split_and_save(res, split_ratio=0.8)
 
 
-def load_SQuAD1(detectLLM, path="datasets/SQuAD1_LLMs.csv"):
+def load_SQuAD1(detectLLM, path=None):
+    if path is None:
+        path = os.path.join(DATASET_DIR_OTHERS, "SQuAD1_LLMs.csv")
     f = pd.read_csv(path)
     q = f["Question"].tolist()
     a_human = [eval(_)["text"][0] for _ in f["answers"].tolist()]
@@ -195,7 +209,9 @@ def load_SQuAD1(detectLLM, path="datasets/SQuAD1_LLMs.csv"):
     return _build_split_and_save(res, split_ratio=0.8)
 
 
-def load_NarrativeQA(detectLLM, path="datasets/NarrativeQA_LLMs.csv"):
+def load_NarrativeQA(detectLLM, path=None):
+    if path is None:
+        path = os.path.join(DATASET_DIR_OTHERS, "NarrativeQA_LLMs.csv")
     f = pd.read_csv(path)
     q = f["Question"].tolist()
     a_human = f["answers"].tolist()
@@ -222,15 +238,23 @@ def load(
     detectLLM,
     category="Art",
     seed=0,
-    repo="AITextDetect/AI_Polish_clean",
+    repo=DATASET_AITextDetect,
     data_path=None,
 ):
     if name in ["TruthfulQA", "SQuAD1", "NarrativeQA"]:
         load_fn = globals()[f"load_{name}"]
-        path_arg = data_path if data_path else f"datasets/{name}_LLMs.csv"
+        path_arg = (
+            data_path
+            if data_path
+            else os.path.join(DATASET_DIR_OTHERS, f"{name}_LLMs.csv")
+        )
         return load_fn(detectLLM, path=path_arg)
     elif name in ["Essay", "Reuters", "WP"]:
-        path_arg = data_path if data_path else f"data/{name}_LLMs.csv"
+        path_arg = (
+            data_path
+            if data_path
+            else os.path.join(DATASET_DIR_OLD, f"{name}_LLMs.csv")
+        )
         data = load_old_data(name, detectLLM, path=path_arg)
         return data
     elif name == "AITextDetect":
@@ -246,7 +270,7 @@ def load(
 
 def load_old_data(name, detectLLM, path=None):
     if path is None:
-        path = f"data/{name}_LLMs.csv"
+        path = os.path.join(DATASET_DIR_OLD, f"{name}_LLMs.csv")
     f = pd.read_csv(path)
     a_human = f["human"].tolist()
     a_chat = f[f"{detectLLM}"].fillna("").tolist()
@@ -260,8 +284,10 @@ def load_old_data(name, detectLLM, path=None):
     return _build_split_and_save(res, split_ratio=0.8)
 
 
-def load_subject_data(detectLLM, category, seed=0, repo="AITextDetect/AI_Polish_clean"):
-    saved_data_path = f"./exp_data/{seed}/{detectLLM}_{category}.json"
+def load_subject_data(detectLLM, category, seed=0, repo=DATASET_AITextDetect):
+    saved_data_path = os.path.join(
+        SAVED_DATA_DIR, str(seed), f"{detectLLM}_{category}.json"
+    )
     cached = _check_and_load_cache(saved_data_path)
     if cached:
         return cached
@@ -294,9 +320,11 @@ def load_subject_data(detectLLM, category, seed=0, repo="AITextDetect/AI_Polish_
     return _build_split_and_save(all_data, saved_data_path)
 
 
-def load_topic_data(detectLLM, topic, seed=0, repo="AITextDetect/AI_Polish_clean"):
+def load_topic_data(detectLLM, topic, seed=0, repo=DATASET_AITextDetect):
     setup_seed(seed)
-    saved_data_path = f"./exp_data/{seed}/{detectLLM}_{topic}.json"
+    saved_data_path = os.path.join(
+        SAVED_DATA_DIR, str(seed), f"{detectLLM}_{topic}.json"
+    )
     cached = _check_and_load_cache(saved_data_path)
     if cached:
         return cached
@@ -339,7 +367,7 @@ def load_topic_data(detectLLM, topic, seed=0, repo="AITextDetect/AI_Polish_clean
     return _build_split_and_save(final_data, saved_data_path, split_ratio=0.7)
 
 
-def download_data(model_name, category, repo="AITextDetect/AI_Polish_clean"):
+def download_data(model_name, category, repo=DATASET_AITextDetect):
     return load_dataset(
         repo,
         trust_remote_code=True,
@@ -349,7 +377,7 @@ def download_data(model_name, category, repo="AITextDetect/AI_Polish_clean"):
     )
 
 
-def prepare_attribution(category="Art", seed=0, repo="AITextDetect/AI_Polish_clean"):
+def prepare_attribution(category="Art", seed=0, repo=DATASET_AITextDetect):
     setup_seed(seed)
     # human
     subject_human_data = load_dataset(
@@ -401,9 +429,7 @@ def prepare_attribution(category="Art", seed=0, repo="AITextDetect/AI_Polish_cle
     return _build_split_and_save(all_data, split_ratio=0.8)
 
 
-def prepare_attribution_topic(
-    topic="STEM", seed=0, repo="AITextDetect/AI_Polish_clean"
-):
+def prepare_attribution_topic(topic="STEM", seed=0, repo=DATASET_AITextDetect):
     setup_seed(seed)
     # e.g. all_data['Moonshot']['STEM'] = [list of subject data in STEM]
     all_data = {}
@@ -481,9 +507,11 @@ def prepare_attribution_topic(
     return _build_split_and_save(final_data, split_ratio=0.8)
 
 
-def load_attribution_topic(topic, seed=0, repo="AITextDetect/AI_Polish_clean"):
+def load_attribution_topic(topic, seed=0, repo=DATASET_AITextDetect):
     assert topic in TOPICS
-    saved_data_path = f"./exp_data/{seed}/{topic}_attribution.json"
+    saved_data_path = os.path.join(
+        SAVED_DATA_DIR, str(seed), f"{topic}_attribution.json"
+    )
     if not os.path.exists(saved_data_path):
         data = prepare_attribution_topic(topic, seed=seed, repo=repo)
         os.makedirs(os.path.dirname(saved_data_path), exist_ok=True)
@@ -496,8 +524,10 @@ def load_attribution_topic(topic, seed=0, repo="AITextDetect/AI_Polish_clean"):
     return data
 
 
-def load_attribution(category, seed=0, repo="AITextDetect/AI_Polish_clean"):
-    saved_data_path = f"./exp_data/{seed}/{category}_attribution_data.json"
+def load_attribution(category, seed=0, repo=DATASET_AITextDetect):
+    saved_data_path = os.path.join(
+        SAVED_DATA_DIR, str(seed), f"{category}_attribution_data.json"
+    )
     if not os.path.exists(saved_data_path):
         data = prepare_attribution(category, seed=seed, repo=repo)
         os.makedirs(os.path.dirname(saved_data_path), exist_ok=True)
@@ -512,7 +542,7 @@ def load_attribution(category, seed=0, repo="AITextDetect/AI_Polish_clean"):
 
 
 def prepare_incremental(
-    order: list, category="Art", seed=3407, repo="AITextDetect/AI_Polish_clean"
+    order: list, category="Art", seed=3407, repo=DATASET_AITextDetect
 ):
     """
     Prepare incremental data for the given category containing specified models and human data,
@@ -637,7 +667,7 @@ def prepare_incremental(
     return data
 
 
-def load_incremental(order, category, seed=0, repo="AITextDetect/AI_Polish_clean"):
+def load_incremental(order, category, seed=0, repo=DATASET_AITextDetect):
     seq = ""
     for model_group in order:
         for model in model_group:
@@ -645,7 +675,9 @@ def load_incremental(order, category, seed=0, repo="AITextDetect/AI_Polish_clean
             seq += str(id)
         seq += "_"
     seq = seq[:-1]
-    saved_data_path = f"./exp_data/{seed}/{category}_incremental_{seq}.json"
+    saved_data_path = os.path.join(
+        SAVED_DATA_DIR, str(seed), f"{category}_incremental_{seq}.json"
+    )
     if not os.path.exists(saved_data_path):
         data = prepare_incremental(order, category, seed=seed, repo=repo)
         os.makedirs(os.path.dirname(saved_data_path), exist_ok=True)
@@ -659,9 +691,7 @@ def load_incremental(order, category, seed=0, repo="AITextDetect/AI_Polish_clean
     return data
 
 
-def prepare_incremental_topic(
-    order: list, topic, seed=3407, repo="AITextDetect/AI_Polish_clean"
-):
+def prepare_incremental_topic(order: list, topic, seed=3407, repo=DATASET_AITextDetect):
     """
     Prepare incremental data for the given topic containing specified models and human data,
     with the order of each model set given by the list of lists in "order".
@@ -807,7 +837,7 @@ LABEL_MAPPING = {
 }
 
 
-def load_incremental_topic(order, topic, seed=0, repo="AITextDetect/AI_Polish_clean"):
+def load_incremental_topic(order, topic, seed=0, repo=DATASET_AITextDetect):
     assert topic in TOPICS
     seq = ""
     for model_group in order:
@@ -816,7 +846,9 @@ def load_incremental_topic(order, topic, seed=0, repo="AITextDetect/AI_Polish_cl
             seq += str(id)
         seq += "_"
     seq = seq[:-1]
-    saved_data_path = f"./exp_data/{seed}/{topic}_incremental_{seq}.json"
+    saved_data_path = os.path.join(
+        SAVED_DATA_DIR, str(seed), f"{topic}_incremental_{seq}.json"
+    )
     if not os.path.exists(saved_data_path):
         data = prepare_incremental_topic(order=order, topic=topic, seed=seed, repo=repo)
         os.makedirs(os.path.dirname(saved_data_path), exist_ok=True)

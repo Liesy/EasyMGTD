@@ -2,9 +2,9 @@ import argparse
 import os
 import csv
 
-from mgtbench import AutoDetector, AutoExperiment
-from mgtbench.loading.dataloader import load_attribution_topic
-from mgtbench.auto import DetectOutput
+from easymgtd import AutoDetector, AutoExperiment
+from easymgtd.loading.dataloader import load_attribution_topic
+from easymgtd.auto import DetectOutput
 
 # add more models here
 MODELS = ['Moonshot', 'gpt35', 'Mixtral', 'Llama3', 'gpt-4omini']
