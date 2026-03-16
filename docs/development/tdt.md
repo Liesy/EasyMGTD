@@ -78,3 +78,61 @@ if detector.name in ['rank', 'LRR', 'entropy', 'Binoculars', 'tdt']:
 ---
 
 **本整合完全保留了 TDT-Text-Detect 论文作者的核心研究成果和底层波形计算函数。**
+
+---
+
+## 最新集成指标 (easymgtd) 与调试指南
+
+随着项目的全面重构（`mgtbench` -> `easymgtd`），TDT 算法已完成深度适配并将相关依赖和配置标准化。
+
+### 1. 环境依赖补充
+
+TDT 的连续小波变换 (CWT) 指标依赖于小波分析库。在 `mgtd` 环境下需确保安装：
+
+```bash
+pip install PyWavelets==1.9.0
+```
+
+该依赖已同步更新至项目的 [requirements.txt](file:///data/liyang/MGTD-Baselines/EasyMGTD/requirements.txt)。
+
+### 2. 重构后的核心路径
+
+在最新的组件化架构中，TDT 相关逻辑位于：
+- **检测器实现**: [easymgtd/methods/tdt.py](file:///data/liyang/MGTD-Baselines/EasyMGTD/easymgtd/methods/tdt.py)
+- **实验调度**: [easymgtd/experiment/threshold_experiment.py](file:///data/liyang/MGTD-Baselines/EasyMGTD/easymgtd/experiment/threshold_experiment.py) (已加入 `_ALLOWED_detector` 白名单)
+- **工厂映射**: 在 [easymgtd/auto.py](file:///data/liyang/MGTD-Baselines/EasyMGTD/easymgtd/auto.py) 中注册为 `"tdt"`。
+
+### 3. 参数配置详解 (`run/config.json`)
+
+TDT 采用了典型的“引用-评分”双模型架构，配置示例如下：
+
+```json
+"tdt": {
+  "experiment_type": "threshold",
+  "detector_args": {
+    "reference_model_name_or_path": "tiiuae/falcon-7b",
+    "scoring_model_name_or_path": "tiiuae/falcon-7b-instruct",
+    "max_length": 512,
+    "extract_wavelet_features": false
+  },
+  "experiment_args": {}
+}
+```
+
+- `reference_model_name_or_path`: 基础参考模型（如 Falcon-7B）。
+- `scoring_model_name_or_path`: 评分模型（如 Falcon-7B-Instruct）。
+- `extract_wavelet_features`: 是否提取波形特征。设置为 `true` 时，计算开销会显著增加。
+
+### 4. 快速验证与调试
+
+我们提供了独立的调试脚本，用于快速核实 TDT 逻辑在当前环境下的正确性：
+
+```bash
+# 进入项目根目录并执行
+python run/debug/test_tdt.py
+```
+
+**预期行为**:
+1. 载入双模型至 GPU（建议使用双卡，脚本会自动尝试 `cuda:0` 和 `cuda:1`）。
+2. 加载本地 AITextDetect 数据。
+3. 执行打分逻辑并输出 ACC/F1/AUC 等指标。

@@ -24,7 +24,15 @@ class ThresholdExperiment(BaseExperiment):
     - For rank_GLTR, only logistic regression is used.
     """
 
-    _ALLOWED_detector = ["ll", "rank", "LRR", "rank_GLTR", "entropy", "Binoculars", "tdt"]
+    _ALLOWED_detector = [
+        "ll",
+        "rank",
+        "LRR",
+        "rank_GLTR",
+        "entropy",
+        "Binoculars",
+        "tdt",
+    ]
 
     def __init__(self, detector, **kargs) -> None:
         super().__init__()

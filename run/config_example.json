@@ -210,6 +210,17 @@
     }
   },
 
+  "tdt": {
+    "experiment_type": "threshold",
+    "detector_args": {
+      "reference_model_name_or_path": "tiiuae/falcon-7b",
+      "scoring_model_name_or_path": "tiiuae/falcon-7b-instruct",
+      "max_length": 512,
+      "extract_wavelet_features": false
+    },
+    "experiment_args": {}
+  },
+
   "demasq": {
     "experiment_type": "demasq",
     "detector_args": {},
