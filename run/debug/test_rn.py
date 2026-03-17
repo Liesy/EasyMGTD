@@ -18,7 +18,7 @@ from easymgtd.loading.dataloader import load
 # Configuration
 # ============================================================
 METHOD_NAME = "rn"
-GPU_ID = "0"
+GPU_ID = "0,1"
 DEBUG_TOPIC = "STEM"
 DEBUG_LLM = "Moonshot"
 

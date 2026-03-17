@@ -6,8 +6,7 @@ import numpy as np
 from dataclasses import dataclass
 from sklearn.linear_model import LogisticRegression
 
-from ..auto import BaseExperiment
-from ..methods import PerturbBasedDetector
+from ..auto import BaseExperiment, BaseDetector
 from ._base import BaseConfig, init_detectors, launch_with_dual_predictions
 
 
@@ -27,7 +26,7 @@ class PerturbConfig(BaseConfig):
         n_perturbation_rounds (int): Number of perturbation rounds. Default 1.
         n_perturbations (int): Number of perturbations per round. Default 10.
         criterion_score (str): Scoring criterion, e.g. 'z' for z-score. Default 'z'.
-        seed (int): Random seed for reproducibility. Default 0.
+        seed (int): Random seed for reproducibility. Default 3407.
     """
 
     span_length: int = 2
@@ -40,7 +39,7 @@ class PerturbConfig(BaseConfig):
     n_perturbation_rounds: int = 1
     n_perturbations: int = 10
     criterion_score: str = "z"
-    seed: int = 0
+    seed: int = 3407
 
 
 class PerturbExperiment(BaseExperiment):
@@ -59,7 +58,7 @@ class PerturbExperiment(BaseExperiment):
 
     def __init__(self, detector, **kargs) -> None:
         super().__init__()
-        self.detector = init_detectors(detector, PerturbBasedDetector)
+        self.detector = init_detectors(detector, BaseDetector)
         self.perturb_config = PerturbConfig()
 
     def launch(self, **config):

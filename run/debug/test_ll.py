@@ -18,7 +18,7 @@ from easymgtd import AutoDetector, AutoExperiment
 # Configuration
 # ============================================================
 METHOD_NAME = "ll"
-GPU_ID = "0"
+GPU_ID = "0,1"
 # Only test on the first topic for quick debugging; change as needed.
 DEBUG_TOPIC = "STEM"
 DEBUG_LLM = "Moonshot"

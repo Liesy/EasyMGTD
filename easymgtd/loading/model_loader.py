@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 def load_pretrained(
-    model_name_or_path, quantization_bit=None
+    model_name_or_path, quantization_bit=None, device_map="auto"
 ) -> Tuple[PreTrainedModel, PreTrainedTokenizer]:
     r"""
     Loads pretrained model and tokenizer.
@@ -80,7 +80,7 @@ def load_pretrained(
         # config_kwargs["device_map"] = {"": int(os.environ.get("LOCAL_RANK", "0"))}
         logger.info("Quantizing model to {} bit.".format(quantization_bit))
 
-    config_kwargs["device_map"] = "auto"
+    config_kwargs["device_map"] = device_map
 
     # Load and prepare pretrained models (without valuehead).
     model = AutoModelForCausalLM.from_pretrained(
@@ -90,7 +90,7 @@ def load_pretrained(
 
 
 def load_pretrained_mask(
-    model_name_or_path, quantization_bit=None
+    model_name_or_path, quantization_bit=None, device_map="auto"
 ) -> Tuple[PreTrainedModel, PreTrainedTokenizer]:
     r"""
     Loads pretrained model and tokenizer.
@@ -138,7 +138,7 @@ def load_pretrained_mask(
         # config_kwargs["device_map"] = {"": int(os.environ.get("LOCAL_RANK", "0"))}
         logger.info("Quantizing model to {} bit.".format(quantization_bit))
 
-    config_kwargs["device_map"] = "auto"
+    config_kwargs["device_map"] = device_map
     # Load and prepare pretrained models (without valuehead).
     model = AutoModelForSeq2SeqLM.from_pretrained(
         model_name_or_path, config=config, torch_dtype=torch.float16, **config_kwargs

@@ -22,7 +22,7 @@ from easymgtd import AutoDetector, AutoExperiment
 # Configuration
 # ============================================================
 METHOD_NAME = "LM-D"
-GPU_ID = "0"
+GPU_ID = "0,1"
 DEBUG_TOPIC = "STEM"
 DEBUG_LLM = "Moonshot"
 

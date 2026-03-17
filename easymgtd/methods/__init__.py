@@ -16,6 +16,14 @@ from .perturb import (
     FastDetectGPTDetector,
     DNAGPTDetector,
 )
+from .perturbators import (
+    BasePerturbator,
+    TextPerturbator,
+    LogitsPerturbator,
+    T5SpanPerturbator,
+    LogProbSamplingPerturbator,
+    TruncateRegenPerturbator,
+)
 from .supervised import SupervisedDetector
 from .demasq import DemasqDetector
 from .tdt import TDTDetector
