@@ -17,7 +17,7 @@ from easymgtd import AutoDetector, AutoExperiment
 # Configuration
 # ============================================================
 METHOD_NAME = "detectGPT"
-GPU_ID = "0,1"
+GPU_ID = "0,1,2,3"
 DEBUG_TOPIC = "STEM"
 DEBUG_LLM = "Moonshot"
 

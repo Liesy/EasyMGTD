@@ -148,10 +148,11 @@ class DemasqDetector(BaseDetector):
         if not isinstance(text, list):
             text = [text]
         inputs = self.tokenizer.encode(text, convert_to_tensor=True)
-        for emb in inputs:
-            emb = emb.cuda()
-            pred = self.sigmod(self.model(emb)).item()
-            result.append(1 - pred)
+        with torch.no_grad():
+            for emb in inputs:
+                emb = emb.cuda()
+                pred = self.sigmod(self.model(emb)).item()
+                result.append(1 - pred)
         return result if isinstance(text, list) else result[0]
 
     def finetune(self, data, f_config):

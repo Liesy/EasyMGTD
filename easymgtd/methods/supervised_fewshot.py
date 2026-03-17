@@ -667,6 +667,7 @@ class RNDetector(FewShotDetector):
             if _ % 50 == 0:
                 print(loss.item())
 
+    @torch.no_grad()
     def detect(self, text, disable_tqdm=True):
         """Predict the most similar class for an input text."""
         self.model.eval()

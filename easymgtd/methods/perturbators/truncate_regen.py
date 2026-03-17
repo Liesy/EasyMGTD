@@ -4,6 +4,7 @@
 # Truncates text at a configurable ratio and uses a causal language model
 # to regenerate the remainder, producing divergent samples for comparison.
 
+import torch
 from ._base import TextPerturbator
 
 
@@ -49,6 +50,7 @@ class TruncateRegenPerturbator(TextPerturbator):
         data = self.generate_samples(texts, batch_size=self.batch_size)
         return data["sampled"]
 
+    @torch.no_grad()
     def _sample_from_model(self, texts, min_words=55, truncate_ratio=0.5):
         """Generate text continuations from truncated prefixes.
 

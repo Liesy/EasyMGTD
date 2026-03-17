@@ -92,6 +92,7 @@ def _count_masks(texts):
     ]
 
 
+@torch.no_grad()
 def _replace_masks(texts, mask_model, mask_tokenizer, mask_top_p, device):
     """Replace each masked span with a sample from the T5 mask model.
 
