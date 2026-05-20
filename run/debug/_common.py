@@ -87,7 +87,7 @@ def resolve_model_path(path: str) -> str:
     return path
 
 
-def load_demo_data(config: dict, topic: str, detectLLM: str) -> dict:
+def load_demo_data(config: dict, topic: str, targetLLM: str) -> dict:
     """
     Load a dataset and truncate it to the configured train/test sizes.
 
@@ -98,7 +98,7 @@ def load_demo_data(config: dict, topic: str, detectLLM: str) -> dict:
     Args:
         config: Full configuration dict (from config.json).
         topic: Topic or category name, e.g. "STEM" or "Art".
-        detectLLM: Name of the LLM whose generated text is detected.
+        targetLLM: Name of the LLM whose generated text is detected.
 
     Returns:
         A dict with structure:
@@ -110,7 +110,7 @@ def load_demo_data(config: dict, topic: str, detectLLM: str) -> dict:
     test_size = global_cfg.get("test_size", 2000)
     dataset_name = global_cfg.get("dataset", "AITextDetect")
 
-    data = load(dataset_name, detectLLM=detectLLM, category=topic)
+    data = load(dataset_name, targetLLM=targetLLM, category=topic)
 
     # Truncate to requested sizes
     demo = {

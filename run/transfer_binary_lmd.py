@@ -74,7 +74,7 @@ def log_llm_result(csv_file: str, result: DetectOutput, source_llm: str, target_
 
 def transfer_llm(source_topic, source_llm, target_llm, base_model, result_csv):
     setup_seed(3407)
-    data_target = load_topic_data(topic=source_topic, detectLLM=target_llm)
+    data_target = load_topic_data(topic=source_topic, targetLLM=target_llm)
     data_target = get_demo_data(data_target, 100, 2000)
 
     # change the model path
@@ -98,7 +98,7 @@ def transfer_llm(source_topic, source_llm, target_llm, base_model, result_csv):
 
 def transfer_domain(source_topic, target_topic, detectLLM, base_model, result_csv):
     setup_seed(3407)
-    data_target = load_topic_data(topic=target_topic, detectLLM=detectLLM)
+    data_target = load_topic_data(topic=target_topic, targetLLM=detectLLM)
     data_target = get_demo_data(data_target, 100, 2000)
 
     # change the model path

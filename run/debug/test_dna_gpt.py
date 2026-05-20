@@ -36,7 +36,7 @@ if __name__ == "__main__":
     detector = AutoDetector.from_detector_name(METHOD_NAME, **detector_args)
     exp = AutoExperiment.from_experiment_name("perturb", detector=[detector])
 
-    data = load_demo_data(config, topic=DEBUG_TOPIC, detectLLM=DEBUG_LLM)
+    data = load_demo_data(config, topic=DEBUG_TOPIC, targetLLM=DEBUG_LLM)
     exp.load_data(data)
 
     results = exp.launch(**experiment_args)

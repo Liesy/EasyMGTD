@@ -90,7 +90,7 @@ if __name__ == "__main__":
     from easymgtd.loading.dataloader import load as load_raw
 
     dataset_name = global_cfg.get("dataset", "AITextDetect")
-    data = load_raw(dataset_name, detectLLM=DEBUG_LLM, category=DEBUG_TOPIC)
+    data = load_raw(dataset_name, targetLLM=DEBUG_LLM, category=DEBUG_TOPIC)
 
     for model_name in lmd_base_models:
         model_path = resolve_model_path(model_paths_map.get(model_name, model_name))

@@ -4,6 +4,7 @@ EasyMGTD 是基于 [MGTBench-2.0](https://github.com/Y-L-LIU/MGTBench-2.0) 的�
 
 ## News
 
+- **[2026.05.20]** 📦 **数据加载 Schema 化重构**：将 944 行单体 `dataloader.py` 拆分为 Schema + Transform + Registry 架构，支持 JSON/JSONL/CSV/Parquet/HuggingFace 多格式输入，新增数据集仅需编写一个 Transform 类。参数 `detectLLM` 统一更名为 `targetLLM`。详见 [数据加载重构文档](docs/2026-05-20_dataloader_schema_refactoring.md)。
 - **[2026.03.17]** 🔌 **扰动器模块解耦**：将扰动策略从检测器中剥离为独立的 `perturbators` 子包，支持用户自定义扰动器并注入检测器。详见 [扰动器重构文档](docs/2026-03-17_perturbator_refactoring.md)。
 - **[2026.03.16]** 🚀 现已全量支持 **TDT (Temporal Discrepancy Tomography)** 算法的单维标量和多维小波特征提取接入，支持在双模型配置及多 GPU 流水线下直接调用。查阅 [TDT 接入开发文档](docs/development/tdt.md) 获取详情。同时新增 `run/debug/` 自动化调试工具链。
 - **[2026.03.14]** 🏗️ **架构重构升级**：实验框架 (Experiment) 完成模块化拆分，由单文件重构为 9 个独立职责模块，消除冗余并修复了 GPTZero 等方法的初始化 Bug。
@@ -80,9 +81,9 @@ metric = AutoDetector.from_detector_name('ll',
 experiment = AutoExperiment.from_experiment_name('threshold',detector=[metric])
 
 data_name = 'AITextDetect'
-detectLLM = 'gpt35'
+targetLLM = 'gpt35'
 category = 'Art'
-data = load(data_name, detectLLM, category)
+data = load(data_name, targetLLM, category)
 experiment.load_data(data)
 res = experiment.launch()
 
@@ -105,34 +106,80 @@ python run/debug/test_tdt.py            # 测试 TDT (支持标量/小波特征)
 
 ## Dataloader
 
-支持通过分类 (Category) 或主题 (Topic) 加载数据。详情参考 `easymgtd/loading/dataloader.py`。
-示例代码可参考原始的：[`notebook/check_dataloader.ipynb`](notebook/check_dataloader.ipynb)
+自 **2026.05.20** 起，数据加载系统重构为 **Schema + Transform + Registry** 架构。详情参考 [数据加载重构文档](docs/2026-05-20_dataloader_schema_refactoring.md)。
 
-### 如何无缝接入自定义数据集
+### 使用方式
 
-对于希望测试自己的数据集或接口生成内容的用户，本框架支持**极致精简**的“内存挂载”方案，完全不需要调整任何项目目录或环境变量。
-
-底层的 `experiment.load_data(data)` 方法实际上只期望接收一个 `_build_split_and_save` 产出的标准训练集/验证集字典。您可以直接在您的测试脚本里自行拼配符合该结构的 Python 字典：
+**方式一：通过 DatasetRegistry（推荐）**
 
 ```python
-# 组装您的自制数据：1 代表机器生成 (Machine)，0 代表真实文本 (Human)
+from easymgtd.loading import DatasetRegistry
+
+data = DatasetRegistry.load("AITextDetect", targetLLM="gpt35", category="Art", seed=3407)
+```
+
+**方式二：通过兼容层**
+
+```python
+from easymgtd.loading.dataloader import load
+
+data = load("AITextDetect", targetLLM="gpt35", category="Art")
+```
+
+> **Breaking Change**: 参数 `detectLLM` 已更名为 `targetLLM`，旧的参数名不再兼容。
+
+### 已注册数据集
+
+| 注册名 | Schema | 说明 |
+|--------|--------|------|
+| `TruthfulQA` | BinarySample | CSV，human answer vs LLM answer |
+| `SQuAD1` | BinarySample | CSV，JSON-encoded answers |
+| `NarrativeQA` | BinarySample | CSV，semicolon-separated answers |
+| `AITextDetect` | BinarySample | 多文件 JSON，支持 subject/topic 两级加载 |
+| `AITextDetect_Attribution` | AttributionSample | 源模型归属（subject 级） |
+| `AITextDetect_Attribution_Topic` | AttributionSample | 源模型归属（topic 级） |
+| `AITextDetect_Incremental` | IncrementalData | 增量学习（subject 级） |
+| `AITextDetect_Incremental_Topic` | IncrementalData | 增量学习（topic 级） |
+
+### 接入自定义数据集
+
+**方式一：编写 Transform（推荐，可复用）**
+
+只需 3 步：编写 Transform 类、注册、使用。
+
+```python
+# easymgtd/loading/transforms/my_dataset.py
+from ..registry import DatasetRegistry, DatasetTransform
+from ..schemas import BinarySample
+
+@DatasetRegistry.register("MyDataset")
+class MyDatasetTransform(DatasetTransform):
+    output_schema = BinarySample
+
+    def transform(self, raw_data, **kwargs):
+        targetLLM = kwargs["targetLLM"]
+        samples = []
+        for row in raw_data:
+            samples.append(BinarySample(text=row["human_text"], label=0))
+            samples.append(BinarySample(text=row[targetLLM], label=1))
+        return samples
+```
+
+在 `transforms/__init__.py` 中添加 `from . import my_dataset`，即可通过 `DatasetRegistry.load("MyDataset", ...)` 使用。支持输入格式：JSON、JSONL、CSV、Parquet、HuggingFace Dataset。
+
+**方式二：内存直接注入（最简方案）**
+
+```python
 custom_data = {
-    "train": {
-        "text": ["Machine generated text 1", "Human written text 1"],
-        "label": [1, 0]
-    },
-    "test": {
-        "text": ["Machine generated 2", "Human written 2"],
-        "label": [1, 0]
-    }
+    "train": {"text": ["Machine text 1", "Human text 1"], "label": [1, 0]},
+    "test":  {"text": ["Machine text 2", "Human text 2"], "label": [1, 0]}
 }
 
-# 绕过 dataloader，直接喂给流水线
 exp.load_data(custom_data)
 res = exp.launch(**experiment_args)
 ```
 
-这种直接内存注入的方式彻底解耦了文件系统，无论您的原始数据是 CSV、JSON 行，还是来源于某个在线 API 返回，只需写十来行代码解析为上述两层字典并喂给 `launch` 即可无缝跑通从打分到评价的全套流程。
+无论数据来源是 CSV、API 还是数据库，解析为上述字典后即可无缝接入评测流水线。
 
 ---
 
