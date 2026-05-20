@@ -39,7 +39,7 @@ if __name__ == "__main__":
     exp = AutoExperiment.from_experiment_name("fewshot", detector=[detector])
 
     dataset_name = global_cfg.get("dataset", "AITextDetect")
-    data = load(dataset_name, detectLLM=DEBUG_LLM, category=DEBUG_TOPIC)
+    data = load(dataset_name, targetLLM=DEBUG_LLM, category=DEBUG_TOPIC)
     exp.load_data(data)
 
     results = exp.launch(**experiment_args)

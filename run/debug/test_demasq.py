@@ -38,7 +38,7 @@ if __name__ == "__main__":
     exp = AutoExperiment.from_experiment_name("demasq", detector=[detector])
 
     # Load data
-    data = load_demo_data(config, topic=DEBUG_TOPIC, detectLLM=DEBUG_LLM)
+    data = load_demo_data(config, topic=DEBUG_TOPIC, targetLLM=DEBUG_LLM)
     exp.load_data(data)
 
     # Run and print results

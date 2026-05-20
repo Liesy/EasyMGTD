@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
     # Load data (incremental uses the full data, no truncation)
     dataset_name = global_cfg.get("dataset", "AITextDetect")
-    data = load(dataset_name, detectLLM=DEBUG_LLM, category=DEBUG_TOPIC)
+    data = load(dataset_name, targetLLM=DEBUG_LLM, category=DEBUG_TOPIC)
     exp.load_data(data)
 
     # Run and print results

@@ -107,7 +107,7 @@ def transfer_domain_and_llm(method, result_csv):
 
         # domain transfer
         for target_topic in TOPICS:
-            data_target = load_topic_data(detectLLM=detectLLM, topic=target_topic)
+            data_target = load_topic_data(targetLLM=detectLLM, topic=target_topic)
             data_target = get_demo_data(data_target, 10, 100)
             experiment.load_data(data_target)
             print('----------')
@@ -145,7 +145,7 @@ def transfer_domain_and_llm(method, result_csv):
                 
         # LLM transfer
         for target_llm in LLMS:
-            data_target = load_topic_data(detectLLM=target_llm, topic=source_topic)
+            data_target = load_topic_data(targetLLM=target_llm, topic=source_topic)
             data_target = get_demo_data(data_target, 10, 100)
             experiment.load_data(data_target)
             print('----------')

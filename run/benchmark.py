@@ -298,7 +298,7 @@ def experiment(csv_file, method, detectLLM, config):
             detector = AutoDetector.from_detector_name(method, **det_args)
             exp = AutoExperiment.from_experiment_name("threshold", detector=[detector])
             for topic in topics:
-                data = load(dataset_name, detectLLM=detectLLM, category=topic)
+                data = load(dataset_name, targetLLM=detectLLM, category=topic)
                 data = get_demo_data(data, train_size=train_size, test_size=test_size)
                 exp.load_data(data)
                 res = exp.launch(**experiment_args)
@@ -327,7 +327,7 @@ def experiment(csv_file, method, detectLLM, config):
         detector = AutoDetector.from_detector_name("Binoculars", **detector_args)
         exp = AutoExperiment.from_experiment_name("threshold", detector=[detector])
         for topic in topics:
-            data = load(dataset_name, detectLLM=detectLLM, category=topic)
+            data = load(dataset_name, targetLLM=detectLLM, category=topic)
             data = get_demo_data(data, train_size=train_size, test_size=test_size)
             exp.load_data(data)
             res = exp.launch(**experiment_args)
@@ -351,7 +351,7 @@ def experiment(csv_file, method, detectLLM, config):
         batch_size = experiment_args.get("batch_size", 64)
 
         for topic in topics:
-            data = load(dataset_name, detectLLM=detectLLM, category=topic)
+            data = load(dataset_name, targetLLM=detectLLM, category=topic)
             for model_name in lmd_base_models:
                 model_path = resolve_model_path(
                     model_paths_map.get(model_name, model_name)
@@ -431,7 +431,7 @@ def experiment(csv_file, method, detectLLM, config):
             detector_args.get("tokenizer_path", det_model_path)
         )
         for topic in topics:
-            data = load(dataset_name, detectLLM=detectLLM, category=topic)
+            data = load(dataset_name, targetLLM=detectLLM, category=topic)
             data = get_demo_data(data, train_size=train_size, test_size=test_size)
             detector = AutoDetector.from_detector_name(
                 method,
@@ -453,7 +453,7 @@ def experiment(csv_file, method, detectLLM, config):
         exp = AutoExperiment.from_experiment_name("perturb", detector=[detector])
 
         for topic in topics:
-            data = load(dataset_name, detectLLM=detectLLM, category=topic)
+            data = load(dataset_name, targetLLM=detectLLM, category=topic)
             data = get_demo_data(data, train_size=train_size, test_size=test_size)
             exp.load_data(data)
             res = exp.launch(**experiment_args)
@@ -475,7 +475,7 @@ def experiment(csv_file, method, detectLLM, config):
         detector = AutoDetector.from_detector_name(method, **detector_args)
         exp = AutoExperiment.from_experiment_name("demasq", detector=[detector])
         for topic in topics:
-            data = load(dataset_name, detectLLM=detectLLM, category=topic)
+            data = load(dataset_name, targetLLM=detectLLM, category=topic)
             data = get_demo_data(data, train_size=train_size, test_size=test_size)
             exp.load_data(data)
             res = exp.launch(**experiment_args)
@@ -491,7 +491,7 @@ def experiment(csv_file, method, detectLLM, config):
         detector = AutoDetector.from_detector_name(method, **detector_args)
         exp = AutoExperiment.from_experiment_name("incremental", detector=[detector])
         for topic in topics:
-            data = load(dataset_name, detectLLM=detectLLM, category=topic)
+            data = load(dataset_name, targetLLM=detectLLM, category=topic)
             exp.load_data(data)
             res = exp.launch(**experiment_args)
             print("==========")
@@ -505,7 +505,7 @@ def experiment(csv_file, method, detectLLM, config):
         detector = AutoDetector.from_detector_name(method, **detector_args)
         exp = AutoExperiment.from_experiment_name("fewshot", detector=[detector])
         for topic in topics:
-            data = load(dataset_name, detectLLM=detectLLM, category=topic)
+            data = load(dataset_name, targetLLM=detectLLM, category=topic)
             exp.load_data(data)
             res = exp.launch(**experiment_args)
             print("==========")
@@ -519,7 +519,7 @@ def experiment(csv_file, method, detectLLM, config):
         detector = AutoDetector.from_detector_name(method, **detector_args)
         exp = AutoExperiment.from_experiment_name("threshold", detector=[detector])
         for topic in topics:
-            data = load(dataset_name, detectLLM=detectLLM, category=topic)
+            data = load(dataset_name, targetLLM=detectLLM, category=topic)
             data = get_demo_data(data, train_size=train_size, test_size=test_size)
             exp.load_data(data)
             res = exp.launch(**experiment_args)

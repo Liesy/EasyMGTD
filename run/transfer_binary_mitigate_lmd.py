@@ -111,7 +111,7 @@ def log_llm_result( csv_file: str,
 
 
 def transfer_domain(result_csv, base_model, source_topic, target_topic, detectLLM):
-    data_target = load_topic_data(detectLLM=detectLLM, topic=target_topic)
+    data_target = load_topic_data(targetLLM=detectLLM, topic=target_topic)
     trained_model_path = get_path(base_model, detectLLM, source_topic)
 
     if source_topic == target_topic:
@@ -176,7 +176,7 @@ def transfer_domain(result_csv, base_model, source_topic, target_topic, detectLL
 
 
 def transfer_llm(result_csv, base_model, source_topic, source_llm, target_llm):
-    target_data = load_topic_data(detectLLM=target_llm, topic=source_topic)
+    target_data = load_topic_data(targetLLM=target_llm, topic=source_topic)
     trained_model_path = get_path(base_model, source_llm, source_topic)
 
     if target_llm == source_llm:
